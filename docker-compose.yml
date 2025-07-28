@@ -18,13 +18,14 @@ services:
   web:
     build: .
     volumes:
-      - ./boutique:/app
+      - ./social_media:/app
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
     environment:
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-your-secret-key}
       - DEBUG=${DEBUG:-1}
       - DB_HOST=db
       - DB_NAME=${DB_NAME:-boutique_db}

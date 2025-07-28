@@ -24,7 +24,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Copie le code de l'application
-COPY ./boutique /app
+COPY ./social_media /app
 
 # Expose le port 8000
 EXPOSE 8000

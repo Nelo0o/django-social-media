@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil / X{% endblock %}
+
+{% block content %}
+<!-- Feed principal -->
+<div class=\"flex-1 max-w-2xl border-x border-x-border\">
+    <!-- Header -->
+    <div class=\"sticky top-0 bg-x-black bg-opacity-80 backdrop-blur-md border-b border-x-border p-4\">
+        <h1 class=\"text-xl font-bold\">Accueil</h1>
+    </div>
+    
+    <!-- Feed des tweets -->
+    <div>
+        <!-- Tweet 1 -->
+        <article class=\"border-b border-x-border p-4 hover:bg-x-dark hover:bg-opacity-50 transition-colors cursor-pointer\">
+            <div class=\"flex space-x-3\">
+                <img src=\"https://via.placeholder.com/48\" class=\"w-12 h-12 rounded-full\" alt=\"Avatar\">
+                <div class=\"flex-1\">
+                    <div class=\"flex items-center space-x-2 mb-1\">
+                        <h3 class=\"font-bold hover:underline\">John Doe</h3>
+                        <span class=\"text-x-gray\">@johndoe</span>
+                        <span class=\"text-x-gray\">·</span>
+                        <span class=\"text-x-gray\">2h</span>
+                    </div>
+                    <p class=\"mb-3\">
+                        Travail sur un clone de Twitter avec #Django ! 
+                        L'architecture avec les apps séparées rend le code très maintenable 🚀
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <!-- Tweet 2 -->
+        <article class=\"border-b border-x-border p-4 hover:bg-x-dark hover:bg-opacity-50 transition-colors cursor-pointer\">
+            <div class=\"flex space-x-3\">
+                <img src=\"https://via.placeholder.com/48\" class=\"w-12 h-12 rounded-full\" alt=\"Avatar\">
+                <div class=\"flex-1\">
+                    <div class=\"flex items-center space-x-2 mb-1\">
+                        <h3 class=\"font-bold hover:underline\">Jane Smith</h3>
+                        <span class=\"text-x-gray\">@janesmith</span>
+                        <span class=\"text-x-gray\">·</span>
+                        <span class=\"text-x-gray\">4h</span>
+                    </div>
+                    <p class=\"mb-3\">
+                        Les modèles Django sont vraiment puissants pour créer des relations complexes ! 
+                        #WebDev #Python
+                    </p>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

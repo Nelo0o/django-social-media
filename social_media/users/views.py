@@ -1,12 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
+from django.contrib.auth.models import User
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse_lazy
+from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
 from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.db.models import Q, Count
+from django.core.paginator import Paginator
 from .forms import InscriptionForm, UserProfileForm
 from .models import UserProfile
+from tweets.models import Tweet
 
 
 class RegisterView(FormView):
@@ -21,12 +29,48 @@ class RegisterView(FormView):
         return super().form_valid(form)
 
 
-class AccountView(LoginRequiredMixin, TemplateView):
+class AccountView(TemplateView):
     template_name = 'account.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['profile'] = self.request.user.profile
+        username = kwargs.get('username')
+        
+        if username:
+            # Affichage d'un profil public
+            profile_user = get_object_or_404(User, username=username)
+            profile = profile_user.profile
+            context['profile_user'] = profile_user
+            context['profile'] = profile
+            context['is_own_profile'] = self.request.user.is_authenticated and profile_user == self.request.user
+            
+            # Vérifier si l'utilisateur connecté suit ce profil
+            if self.request.user.is_authenticated and not context['is_own_profile']:
+                context['is_following'] = self.request.user.profile.is_following(profile)
+            else:
+                context['is_following'] = False
+        else:
+            # Affichage du profil de l'utilisateur connecté
+            if not self.request.user.is_authenticated:
+                return redirect('login')
+            context['profile_user'] = self.request.user
+            context['profile'] = self.request.user.profile
+            context['is_own_profile'] = True
+            context['is_following'] = False
+        
+        # Récupérer les tweets de l'utilisateur affiché
+        user_tweets = Tweet.objects.filter(
+            author=context['profile']
+        ).select_related('author', 'author__user').prefetch_related('likes').order_by('-created_at')
+        
+        # Ajouter les informations de like pour l'utilisateur connecté
+        if self.request.user.is_authenticated:
+            for tweet in user_tweets:
+                tweet.is_liked_by_user = tweet.likes.filter(user=self.request.user.profile).exists()
+        
+        context['user_tweets'] = user_tweets
+        context['tweets_count'] = user_tweets.count()
+            
         return context
 
 
@@ -42,3 +86,144 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Profil mis à jour!')
         return super().form_valid(form)
+
+
+class PublicProfileView(TemplateView):
+    template_name = 'public_profile.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        username = kwargs.get('username')
+        user = get_object_or_404(User, username=username)
+        profile = user.profile
+        
+        context['profile_user'] = user
+        context['profile'] = profile
+        
+        # Vérifier si l'utilisateur connecté suit ce profil
+        if self.request.user.is_authenticated:
+            context['is_following'] = self.request.user.profile.is_following(profile)
+        else:
+            context['is_following'] = False
+            
+        return context
+
+
+@login_required
+@require_POST
+def follow_user(request, username):
+    """Vue pour suivre un utilisateur"""
+    target_user = get_object_or_404(User, username=username)
+    target_profile = target_user.profile
+    
+    try:
+        success = request.user.profile.follow(target_profile)
+        
+        return JsonResponse({
+            'success': success,
+            'is_following': request.user.profile.is_following(target_profile),
+            'followers_count': target_profile.followers_count,
+            'message': 'Utilisateur suivi avec succès' if success else 'Vous suivez déjà cet utilisateur'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+
+
+@login_required
+@require_POST
+def unfollow_user(request, username):
+    """Vue pour ne plus suivre un utilisateur"""
+    target_user = get_object_or_404(User, username=username)
+    target_profile = target_user.profile
+    
+    success = request.user.profile.unfollow(target_profile)
+    
+    return JsonResponse({
+        'success': success,
+        'is_following': request.user.profile.is_following(target_profile),
+        'followers_count': target_profile.followers_count,
+        'message': 'Vous ne suivez plus cet utilisateur' if success else 'Vous ne suiviez pas cet utilisateur'
+    })
+
+
+class UserSearchView(TemplateView):
+    template_name = 'user_search.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get('q', '').strip()
+        page = self.request.GET.get('page', 1)
+        
+        users = UserProfile.objects.select_related('user').all()
+        
+        if query:
+            # Recherche par nom d'utilisateur, prénom, nom ou bio
+            users = users.filter(
+                Q(user__username__icontains=query) |
+                Q(user__first_name__icontains=query) |
+                Q(user__last_name__icontains=query) |
+                Q(bio__icontains=query)
+            )
+        
+        # Exclure l'utilisateur connecté de la recherche
+        if self.request.user.is_authenticated:
+            users = users.exclude(user=self.request.user)
+        
+        # Ordonner par nombre de followers puis par nom d'utilisateur
+        users = users.annotate(
+            followers_count_db=Count('followers', distinct=True)
+        ).order_by('-followers_count_db', 'user__username')
+        
+        # Pagination
+        paginator = Paginator(users, 12)  # 12 utilisateurs par page
+        page_obj = paginator.get_page(page)
+        
+        # Ajouter les informations de suivi pour l'utilisateur connecté
+        if self.request.user.is_authenticated:
+            for user_profile in page_obj:
+                user_profile.is_followed_by_current_user = self.request.user.profile.is_following(user_profile)
+        
+        context.update({
+            'query': query,
+            'page_obj': page_obj,
+            'users': page_obj,
+            'total_results': paginator.count
+        })
+        
+        return context
+
+
+@login_required
+def user_suggestions(request):
+    """API pour obtenir des suggestions d'utilisateurs à suivre"""
+    # Utilisateurs populaires que l'utilisateur ne suit pas encore
+    current_user_profile = request.user.profile
+    
+    # Obtenir les IDs des utilisateurs déjà suivis
+    following_ids = current_user_profile.following.values_list('id', flat=True)
+    
+    # Suggestions basées sur la popularité (nombre de followers)
+    suggestions = UserProfile.objects.select_related('user').exclude(
+        Q(user=request.user) | Q(id__in=following_ids)
+    ).annotate(
+        followers_count_db=Count('followers', distinct=True)
+    ).order_by('-followers_count_db')[:5]
+    
+    suggestions_data = []
+    for profile in suggestions:
+        suggestions_data.append({
+            'username': profile.user.username,
+            'full_name': f"{profile.user.first_name} {profile.user.last_name}".strip() or profile.user.username,
+            'bio': profile.bio or '',
+            'avatar_url': profile.avatar.url if profile.avatar else None,
+            'followers_count': profile.followers_count,
+            'profile_url': f'/profile/{profile.user.username}/'
+        })
+    
+    return JsonResponse({
+        'suggestions': suggestions_data
+    })

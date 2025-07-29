@@ -33,6 +33,15 @@ urlpatterns = [
     # URLs de profil courtes
     path('profile/', user_views.AccountView.as_view(), name='profile'),
     path('profile/edit/', user_views.ProfileUpdateView.as_view(), name='profile_edit'),
+    path('profile/<str:username>/', user_views.AccountView.as_view(), name='public_profile'),
+    
+    # URLs de follow/unfollow
+    path('follow/<str:username>/', user_views.follow_user, name='follow_user'),
+    path('unfollow/<str:username>/', user_views.unfollow_user, name='unfollow_user'),
+    
+    # URLs de recherche d'utilisateurs
+    path('search/', user_views.UserSearchView.as_view(), name='user_search'),
+    path('api/suggestions/', user_views.user_suggestions, name='user_suggestions'),
     
     # URLs des tweets
     path('tweets/', include('tweets.urls')),

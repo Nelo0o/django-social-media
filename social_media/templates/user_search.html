@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rechercher des utilisateurs - Z{% endblock %}
+
+{% block content %}
+<!-- Main Content Area -->
+<div class="flex-1 max-w-2xl border-x border-x-border">
+    <!-- Header -->
+    <div class="sticky top-0 bg-x-white/95 backdrop-blur-md border-b border-x-border p-4">
+        <h1 class="text-xl font-bold text-x-text">Rechercher des utilisateurs</h1>
+    </div>
+    
+    <!-- Search Form -->
+    <div class="p-4 border-b border-x-border">
+        <form method="GET" class="relative">
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-x-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" 
+                       name="q" 
+                       value="{{ query }}" 
+                       placeholder="Rechercher par nom d'utilisateur, nom ou bio..."
+                       class="w-full pl-10 pr-4 py-3 border border-x-border rounded-full focus:outline-none focus:ring-2 focus:ring-x-blue focus:border-transparent bg-x-light">
+            </div>
+            <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-x-blue text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-x-blue-hover transition-colors">
+                Rechercher
+            </button>
+        </form>
+    </div>
+    
+    <!-- Results -->
+    <div class="p-4">
+        {% if query %}
+            <div class="mb-4">
+                <p class="text-x-gray">
+                    {% if total_results > 0 %}
+                        {{ total_results }} résultat{{ total_results|pluralize }} pour "<span class="font-medium text-x-text">{{ query }}</span>"
+                    {% else %}
+                        Aucun résultat pour "<span class="font-medium text-x-text">{{ query }}</span>"
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+        
+        {% if users %}
+            <!-- User Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for user_profile in users %}
+                    <div class="bg-x-white rounded-lg border border-x-border p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-start space-x-3">
+                            <!-- Avatar -->
+                            <div class="flex-shrink-0">
+                                {% if user_profile.avatar %}
+                                    <img src="{{ user_profile.avatar.url }}" alt="{{ user_profile.user.username }}" 
+                                         class="w-12 h-12 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-12 h-12 rounded-full bg-x-blue flex items-center justify-center">
+                                        <span class="text-white font-bold">
+                                            {{ user_profile.user.username|first|upper }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- User Info -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <div class="min-w-0 flex-1">
+                                        <a href="{% url 'public_profile' user_profile.user.username %}" 
+                                           class="block hover:underline">
+                                            <h3 class="font-bold text-x-text truncate">
+                                                {% if user_profile.user.first_name or user_profile.user.last_name %}
+                                                    {{ user_profile.user.first_name }} {{ user_profile.user.last_name }}
+                                                {% else %}
+                                                    {{ user_profile.user.username }}
+                                                {% endif %}
+                                            </h3>
+                                            <p class="text-x-gray text-sm">@{{ user_profile.user.username }}</p>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Follow Button -->
+                                    {% if user.is_authenticated %}
+                                        <div class="ml-2">
+                                            {% if user_profile.is_followed_by_current_user %}
+                                                <button class="follow-btn bg-x-gray text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-x-dark-gray transition-colors"
+                                                        data-username="{{ user_profile.user.username }}"
+                                                        data-following="true">
+                                                    Suivi
+                                                </button>
+                                            {% else %}
+                                                <button class="follow-btn bg-x-blue text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-x-blue-hover transition-colors"
+                                                        data-username="{{ user_profile.user.username }}"
+                                                        data-following="false">
+                                                    Suivre
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Bio -->
+                                {% if user_profile.bio %}
+                                    <p class="text-x-text text-sm mt-2 line-clamp-2">{{ user_profile.bio }}</p>
+                                {% endif %}
+                                
+                                <!-- Stats -->
+                                <div class="flex space-x-4 mt-2 text-xs text-x-gray">
+                                    <span>{{ user_profile.followers_count }} abonné{{ user_profile.followers_count|pluralize }}</span>
+                                    <span>{{ user_profile.following_count }} abonnement{{ user_profile.following_count|pluralize }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="flex justify-center mt-8">
+                    <nav class="flex space-x-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}" 
+                               class="px-3 py-2 text-x-gray hover:text-x-text border border-x-border rounded-md hover:bg-x-light transition-colors">
+                                Précédent
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <span class="px-3 py-2 bg-x-blue text-white rounded-md">{{ num }}</span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <a href="?q={{ query }}&page={{ num }}" 
+                                   class="px-3 py-2 text-x-gray hover:text-x-text border border-x-border rounded-md hover:bg-x-light transition-colors">
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" 
+                               class="px-3 py-2 text-x-gray hover:text-x-text border border-x-border rounded-md hover:bg-x-light transition-colors">
+                                Suivant
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+        {% elif query %}
+            <!-- No Results -->
+            <div class="text-center py-12">
+                <svg class="mx-auto w-16 h-16 text-x-gray mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-x-text mb-2">Aucun utilisateur trouvé</h3>
+                <p class="text-x-gray">Essayez avec d'autres mots-clés</p>
+            </div>
+        {% else %}
+            <!-- Welcome Message -->
+            <div class="text-center py-12">
+                <svg class="mx-auto w-16 h-16 text-x-gray mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-x-text mb-2">Découvrez de nouveaux utilisateurs</h3>
+                <p class="text-x-gray">Utilisez la barre de recherche pour trouver des personnes à suivre</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Right Sidebar -->
+<div class="w-80 p-4">
+    <div class="bg-x-white rounded-xl p-4 border border-x-border">
+        <h3 class="text-lg font-bold text-x-text mb-3">Suggestions</h3>
+        <div id="suggestions-container">
+            <div class="text-center py-4">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-x-blue mx-auto"></div>
+                <p class="text-x-gray text-sm mt-2">Chargement...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons de follow dans la recherche
+    document.querySelectorAll('.follow-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const username = this.dataset.username;
+            const isFollowing = this.dataset.following === 'true';
+            const url = isFollowing ? `/unfollow/${username}/` : `/follow/${username}/`;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_following) {
+                        this.textContent = 'Suivi';
+                        this.className = 'follow-btn bg-x-gray text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-x-dark-gray transition-colors';
+                        this.dataset.following = 'true';
+                    } else {
+                        this.textContent = 'Suivre';
+                        this.className = 'follow-btn bg-x-blue text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-x-blue-hover transition-colors';
+                        this.dataset.following = 'false';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+        });
+    });
+    
+    // Charger les suggestions
+    {% if user.is_authenticated %}
+    fetch('/api/suggestions/')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('suggestions-container');
+            if (data.suggestions && data.suggestions.length > 0) {
+                container.innerHTML = data.suggestions.map(user => `
+                    <div class="flex items-center space-x-3 py-2">
+                        <div class="flex-shrink-0">
+                            ${user.avatar_url ? 
+                                `<img src="${user.avatar_url}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover">` :
+                                `<div class="w-10 h-10 rounded-full bg-x-blue flex items-center justify-center">
+                                    <span class="text-white font-bold text-sm">${user.username.charAt(0).toUpperCase()}</span>
+                                </div>`
+                            }
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <a href="${user.profile_url}" class="block hover:underline">
+                                <p class="font-medium text-x-text text-sm truncate">${user.full_name}</p>
+                                <p class="text-x-gray text-xs">@${user.username}</p>
+                            </a>
+                        </div>
+                        <button class="follow-btn bg-x-blue text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-x-blue-hover transition-colors"
+                                data-username="${user.username}"
+                                data-following="false">
+                            Suivre
+                        </button>
+                    </div>
+                `).join('');
+                
+                // Ajouter les event listeners aux nouveaux boutons
+                container.querySelectorAll('.follow-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const username = this.dataset.username;
+                        fetch(`/follow/${username}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                this.textContent = 'Suivi';
+                                this.className = 'follow-btn bg-x-gray text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-x-dark-gray transition-colors';
+                                this.dataset.following = 'true';
+                            }
+                        });
+                    });
+                });
+            } else {
+                container.innerHTML = '<p class="text-x-gray text-sm text-center py-4">Aucune suggestion disponible</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des suggestions:', error);
+            document.getElementById('suggestions-container').innerHTML = '<p class="text-x-gray text-sm text-center py-4">Erreur de chargement</p>';
+        });
+    {% endif %}
+});
+</script>
+
+<!-- Token CSRF pour les requêtes AJAX -->
+{% csrf_token %}
+{% endblock %}

@@ -1,13 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}Mon Compte - Z{% endblock %}
+{% block title %}{% if is_own_profile %}Mon Compte{% else %}{{ profile_user.username }}{% endif %} - Z{% endblock %}
 
 {% block content %}
 <!-- Main Content Area -->
 <div class="flex-1 max-w-2xl border-x border-x-border">
     <!-- Header -->
     <div class="sticky top-0 bg-x-white/95 backdrop-blur-md border-b border-x-border p-4">
-        <h1 class="text-xl font-bold text-x-text">Mon Compte</h1>
+        <h1 class="text-xl font-bold text-x-text">
+            {% if is_own_profile %}
+                Mon Compte
+            {% else %}
+                {{ profile_user.username }}
+            {% endif %}
+        </h1>
     </div>
     
     <!-- Profile Content -->
@@ -30,14 +36,57 @@
                 
                 <!-- User Info -->
                 <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-white mb-1">{{ user.username }}</h2>
-                    <p class="text-x-gray mb-3">@{{ user.username }}</p>
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h2 class="text-2xl font-bold text-x-text mb-1">
+                                {% if profile_user.first_name or profile_user.last_name %}
+                                    {{ profile_user.first_name }} {{ profile_user.last_name }}
+                                {% else %}
+                                    {{ profile_user.username }}
+                                {% endif %}
+                            </h2>
+                            <p class="text-x-gray">@{{ profile_user.username }}</p>
+                        </div>
+                        
+                        <!-- Bouton Follow/Unfollow pour les profils publics -->
+                        {% if not is_own_profile and user.is_authenticated %}
+                            <div id="follow-button-container">
+                                {% if is_following %}
+                                    <button id="follow-btn" 
+                                            class="bg-x-gray text-white px-6 py-2 rounded-full font-medium hover:bg-x-dark-gray transition-colors"
+                                            data-username="{{ profile_user.username }}"
+                                            data-following="true">
+                                        Ne plus suivre
+                                    </button>
+                                {% else %}
+                                    <button id="follow-btn" 
+                                            class="bg-x-blue text-white px-6 py-2 rounded-full font-medium hover:bg-x-blue-hover transition-colors"
+                                            data-username="{{ profile_user.username }}"
+                                            data-following="false">
+                                        Suivre
+                                    </button>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
                     
                     <!-- Bio -->
                     {% if profile.bio %}
-                        <p class="text-white mb-3">{{ profile.bio }}</p>
+                        <p class="text-x-text mb-3">{{ profile.bio }}</p>
                     {% else %}
-                        <p class="text-x-gray mb-3 italic">Aucune biographie</p>
+                        {% if is_own_profile %}
+                            <p class="text-x-gray mb-3 italic">Aucune biographie</p>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Ville (si renseignée) -->
+                    {% if profile.city %}
+                        <div class="flex items-center mb-3 text-x-gray">
+                            <svg class="w-5 h-5 mr-2 text-x-blue" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            <span class="text-x-text font-medium">{{ profile.city }}</span>
+                        </div>
                     {% endif %}
                     
                     <!-- Location and Join Date -->
@@ -55,33 +104,187 @@
                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 3h-4v4h4V6z"/>
                             </svg>
-                            Membre depuis {{ user.date_joined|date:"F Y" }}
+                            Membre depuis {{ profile_user.date_joined|date:"F Y" }}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Account Details -->
-        <div class="bg-x-darker rounded-xl p-6 mb-6">
-            <h3 class="text-lg font-semibold text-white mb-4">Informations du compte</h3>
-            <div class="space-y-3">
-                <div class="flex justify-between items-center py-2 border-b border-x-border">
-                    <span class="text-x-light-gray">Email</span>
-                    <span class="text-white">{{ user.email }}</span>
+        <!-- Statistiques -->
+        <div class="bg-x-white rounded-xl p-6 mb-6 border border-x-border">
+            <h3 class="text-lg font-semibold text-x-text mb-4">Statistiques</h3>
+            <div class="flex space-x-6">
+                <div class="text-center">
+                    <div class="text-xl font-bold text-x-text">{{ profile.tweets_count }}</div>
+                    <div class="text-x-gray text-sm">Tweet{{ profile.tweets_count|pluralize }}</div>
                 </div>
-                <div class="flex justify-between items-center py-2 border-b border-x-border">
-                    <span class="text-x-light-gray">Nom d'utilisateur</span>
-                    <span class="text-white">{{ user.username }}</span>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-x-text" id="followers-count">{{ profile.followers_count }}</div>
+                    <div class="text-x-gray text-sm">Abonné{{ profile.followers_count|pluralize }}</div>
                 </div>
-                <div class="flex justify-between items-center py-2">
-                    <span class="text-x-light-gray">Date d'inscription</span>
-                    <span class="text-white">{{ user.date_joined|date:"d/m/Y" }}</span>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-x-text">{{ profile.following_count }}</div>
+                    <div class="text-x-gray text-sm">Abonnement{{ profile.following_count|pluralize }}</div>
                 </div>
             </div>
         </div>
         
-        <!-- Action Buttons -->
+        <!-- Tweets de l'utilisateur -->
+        <div class="bg-x-white rounded-xl border border-x-border mb-6">
+            <div class="p-4 border-b border-x-border">
+                <h3 class="text-lg font-semibold text-x-text">
+                    {% if is_own_profile %}
+                        Mes tweets
+                    {% else %}
+                        Tweets de {{ profile_user.username }}
+                    {% endif %}
+                    <span class="text-x-gray text-sm font-normal">({{ tweets_count }})</span>
+                </h3>
+            </div>
+            
+            {% if user_tweets %}
+                {% for tweet in user_tweets %}
+                <div class="p-4 border-b border-x-border last:border-b-0 hover:bg-x-lighter transition-colors">
+                    <div class="flex space-x-3">
+                        <!-- Avatar -->
+                        <div class="flex-shrink-0">
+                            {% if tweet.author.avatar %}
+                                <img src="{{ tweet.author.avatar.url }}" alt="{{ tweet.author.user.username }}" class="w-10 h-10 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-x-lighter flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Tweet Content -->
+                        <div class="flex-1 min-w-0">
+                            <!-- Header -->
+                            <div class="flex items-center space-x-2 mb-1">
+                                <a href="{% url 'public_profile' username=tweet.author.user.username %}" class="font-semibold text-x-text hover:underline">
+                                    {% if tweet.author.user.first_name or tweet.author.user.last_name %}
+                                        {{ tweet.author.user.first_name }} {{ tweet.author.user.last_name }}
+                                    {% else %}
+                                        {{ tweet.author.user.username }}
+                                    {% endif %}
+                                </a>
+                                <a href="{% url 'public_profile' username=tweet.author.user.username %}" class="text-x-gray hover:underline">
+                                    @{{ tweet.author.user.username }}
+                                </a>
+                                <span class="text-x-gray">·</span>
+                                <span class="text-x-gray text-sm">{{ tweet.created_at|timesince }}</span>
+                            </div>
+                            
+                            <!-- Tweet Text -->
+                            <div class="text-x-text mb-3 whitespace-pre-wrap">{{ tweet.content }}</div>
+                            
+                            <!-- Actions -->
+                            <div class="flex items-center space-x-6 text-x-gray">
+                                <!-- Commentaires -->
+                                <button class="flex items-center space-x-2 hover:text-x-blue transition-colors group">
+                                    <div class="p-2 rounded-full group-hover:bg-x-blue/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm">{{ tweet.comments_count|default:0 }}</span>
+                                </button>
+                                
+                                <!-- Retweets -->
+                                <button class="flex items-center space-x-2 hover:text-green-500 transition-colors group">
+                                    <div class="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm">{{ tweet.retweets_count|default:0 }}</span>
+                                </button>
+                                
+                                <!-- Likes -->
+                                {% if user.is_authenticated %}
+                                <button class="like-btn flex items-center space-x-2 hover:text-red-500 transition-colors group" 
+                                        data-tweet-id="{{ tweet.id }}" 
+                                        data-liked="{{ tweet.is_liked_by_user|yesno:'true,false' }}">
+                                    <div class="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
+                                        <svg class="heart-icon w-4 h-4 transition-all duration-200 {% if tweet.is_liked_by_user %}text-red-500 fill-current{% else %}stroke-current fill-none{% endif %}" viewBox="0 0 24 24">
+                                            {% if tweet.is_liked_by_user %}
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>
+                                            {% else %}
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none"/>
+                                            {% endif %}
+                                        </svg>
+                                    </div>
+                                    <span class="likes-count text-sm">{{ tweet.likes_count }}</span>
+                                </button>
+                                {% else %}
+                                <div class="flex items-center space-x-2 text-x-gray">
+                                    <div class="p-2 rounded-full">
+                                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24">
+                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none"/>
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm">{{ tweet.likes_count }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Partager -->
+                                <button class="flex items-center space-x-2 hover:text-x-blue transition-colors group">
+                                    <div class="p-2 rounded-full group-hover:bg-x-blue/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                                        </svg>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="p-8 text-center text-x-gray">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                    </svg>
+                    <p class="text-lg font-medium mb-2">
+                        {% if is_own_profile %}
+                            Vous n'avez pas encore publié de tweets
+                        {% else %}
+                            {{ profile_user.username }} n'a pas encore publié de tweets
+                        {% endif %}
+                    </p>
+                    {% if is_own_profile %}
+                        <p class="text-sm">Commencez à partager vos pensées avec le monde !</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if is_own_profile %}
+        <!-- Account Details (seulement pour son propre profil) -->
+        <div class="bg-x-white rounded-xl p-6 mb-6 border border-x-border">
+            <h3 class="text-lg font-semibold text-x-text mb-4">Informations du compte</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center py-2 border-b border-x-border">
+                    <span class="text-x-gray">Email</span>
+                    <span class="text-x-text">{{ user.email }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-x-border">
+                    <span class="text-x-gray">Nom d'utilisateur</span>
+                    <span class="text-x-text">{{ user.username }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-x-gray">Date d'inscription</span>
+                    <span class="text-x-text">{{ user.date_joined|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Action Buttons (seulement pour son propre profil) -->
+        {% if is_own_profile %}
         <div class="flex space-x-4">
             <a href="{% url 'profile_edit' %}" 
                class="flex-1 bg-x-blue hover:bg-x-blue-hover text-white font-bold py-3 px-6 rounded-full text-center transition-colors">
@@ -97,27 +300,137 @@
                 </button>
             </form>
         </div>
+        {% endif %}
     </div>
 </div>
 
 <!-- Right Sidebar -->
 <div class="w-80 p-4">
-    <div class="bg-x-darker rounded-xl p-4">
-        <h3 class="text-lg font-bold text-white mb-3">Statistiques</h3>
-        <div class="space-y-2">
-            <div class="flex justify-between">
-                <span class="text-x-gray">Tweets</span>
-                <span class="text-white font-semibold">{{ user.userprofile.tweets.count }}</span>
+    <div class="bg-x-white rounded-xl p-4 border border-x-border">
+        <h3 class="text-lg font-bold text-x-text mb-3">À propos</h3>
+        <div class="space-y-2 text-sm">
+            <div class="flex items-center text-x-gray">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                </svg>
+                Inscrit en {{ profile_user.date_joined|date:"F Y" }}
             </div>
-            <div class="flex justify-between">
-                <span class="text-x-gray">Abonnés</span>
-                <span class="text-white font-semibold">0</span>
+            {% if profile.city %}
+            <div class="flex items-center text-x-gray">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+                {{ profile.city }}
             </div>
-            <div class="flex justify-between">
-                <span class="text-x-gray">Abonnements</span>
-                <span class="text-white font-semibold">0</span>
-            </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const followBtn = document.getElementById('follow-btn');
+    
+    if (followBtn) {
+        followBtn.addEventListener('click', function() {
+            const username = this.dataset.username;
+            const isFollowing = this.dataset.following === 'true';
+            const url = isFollowing ? `/unfollow/${username}/` : `/follow/${username}/`;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour le bouton
+                    if (data.is_following) {
+                        this.textContent = 'Ne plus suivre';
+                        this.className = 'bg-x-gray text-white px-6 py-2 rounded-full font-medium hover:bg-x-dark-gray transition-colors';
+                        this.dataset.following = 'true';
+                    } else {
+                        this.textContent = 'Suivre';
+                        this.className = 'bg-x-blue text-white px-6 py-2 rounded-full font-medium hover:bg-x-blue-hover transition-colors';
+                        this.dataset.following = 'false';
+                    }
+                    
+                    // Mettre à jour le compteur d'abonnés
+                    document.getElementById('followers-count').textContent = data.followers_count;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+        });
+    }
+    
+    // Gestion des boutons de like
+    document.querySelectorAll('.like-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const tweetId = this.dataset.tweetId;
+            const isLiked = this.dataset.liked === 'true';
+            const heartIcon = this.querySelector('.heart-icon');
+            const likesCount = this.querySelector('.likes-count');
+            
+            // Animation immédiate pour un feedback rapide
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Requête AJAX
+            fetch(`/tweets/${tweetId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour l'état du bouton
+                    this.dataset.liked = data.liked.toString();
+                    
+                    // Mettre à jour le compteur
+                    likesCount.textContent = data.likes_count;
+                    
+                    // Mettre à jour l'apparence du cœur avec animation
+                    if (data.liked) {
+                        // Cœur devient rouge (liked)
+                        heartIcon.classList.remove('stroke-current', 'fill-none');
+                        heartIcon.classList.add('text-red-500', 'fill-current');
+                        heartIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>';
+                        
+                        // Animation de "pop" pour le like
+                        heartIcon.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            heartIcon.style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        // Cœur redevient vide (unliked)
+                        heartIcon.classList.remove('text-red-500', 'fill-current');
+                        heartIcon.classList.add('stroke-current', 'fill-none');
+                        heartIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none"/>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du like:', error);
+                // En cas d'erreur, on peut afficher un message ou restaurer l'état précédent
+            });
+        });
+    });
+});
+</script>
+
+<!-- Token CSRF pour les requêtes AJAX -->
+{% csrf_token %}
 {% endblock %}

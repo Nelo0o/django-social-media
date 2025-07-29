@@ -7,7 +7,7 @@
 <!-- Main Content Area -->
 <div class="flex-1 max-w-2xl border-x border-x-border">
     <!-- Header -->
-    <div class="sticky top-0 bg-x-white/80 backdrop-blur-md border-b border-x-border p-4">
+    <div class="sticky top-0 bg-x-black/80 backdrop-blur-md border-b border-x-border p-4">
         <h1 class="text-xl font-bold text-x-text">Connexion</h1>
     </div>
     
@@ -36,32 +36,32 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-x-dark-gray mb-2">
+                        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
                             Nom d'utilisateur
                         </label>
                         <input type="text" 
                                name="{{ form.username.name }}" 
                                id="{{ form.username.id_for_label }}"
-                               class="w-full px-4 py-3 bg-x-white border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
                                placeholder="Entrez votre nom d'utilisateur"
                                {% if form.username.value %}value="{{ form.username.value }}"{% endif %}
                                required>
                     </div>
                     
                     <div>
-                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-x-dark-gray mb-2">
+                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
                             Mot de passe
                         </label>
                         <input type="password" 
                                name="{{ form.password.name }}" 
                                id="{{ form.password.id_for_label }}"
-                               class="w-full px-4 py-3 bg-x-white border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
                                placeholder="Entrez votre mot de passe"
                                required>
                     </div>
                 </div>
                 
-                <button type="submit" class="w-full bg-x-blue hover:bg-x-blue-hover text-x-white font-bold py-3 px-4 rounded-lg transition-colors duration-200">
+                <button type="submit" class="w-full bg-x-blue hover:bg-x-blue-hover text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200">
                     Se connecter
                 </button>
             </form>

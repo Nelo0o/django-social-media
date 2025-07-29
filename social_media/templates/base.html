@@ -16,15 +16,20 @@
             theme: {
                 extend: {
                     colors: {
-                        'x-white': '#ffffff',
-                        'x-light': '#f8fafc',
-                        'x-lighter': '#f1f5f9',
-                        'x-blue': '#3b82f6',
-                        'x-blue-hover': '#2563eb',
-                        'x-gray': '#64748b',
-                        'x-dark-gray': '#475569',
-                        'x-border': '#e2e8f0',
-                        'x-text': '#1e293b'
+                        // Thème bleu foncé Twitter
+                        'x-black': '#15202b',           // Fond principal bleu foncé
+                        'x-dark': '#1a2332',            // Fond secondaire plus foncé
+                        'x-darker': '#253341',          // Fond des cartes/éléments
+                        'x-blue': '#1d9bf0',            // Bleu Twitter principal
+                        'x-blue-hover': '#1a8cd8',     // Bleu hover
+                        'x-blue-dark': '#1565c0',      // Bleu foncé
+                        'x-white': '#ffffff',           // Blanc pur
+                        'x-light-gray': '#8b98a5',     // Texte secondaire
+                        'x-gray': '#6e767d',           // Texte gris
+                        'x-border': '#38444d',         // Bordures
+                        'x-border-light': '#485564',   // Bordures claires
+                        'x-text': '#e7e9ea',           // Texte principal clair
+                        'x-text-secondary': '#71767b'   // Texte secondaire
                     }
                 }
             }
@@ -33,10 +38,10 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-x-light text-x-text h-full">
+<body class="bg-x-black text-x-text h-full">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-x-white border-r border-x-border flex flex-col shadow-sm">
+        <div class="w-64 bg-x-black border-r border-x-border flex flex-col shadow-sm">
             <!-- Logo -->
             <div class="p-4">
                 <a href="{% url 'core:home' %}" class="block">
@@ -48,7 +53,7 @@
             <nav class="flex-1 px-4">
                 <ul class="space-y-2">
                     <li>
-                        <a href="{% url 'core:home' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
+                        <a href="{% url 'core:home' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                             </svg>
@@ -56,7 +61,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'user_search' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
+                        <a href="{% url 'user_search' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                             </svg>
@@ -64,7 +69,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
+                        <a href="#" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M15 17h5l-5 5v-5zM4 1h5v5H4V1zm0 7h5v5H4V8zm0 7h5v5H4v-5zM11 1h5v5h-5V1zm0 7h5v5h-5V8z"/>
                             </svg>
@@ -72,7 +77,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'profile' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
+                        <a href="{% url 'profile' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
@@ -90,12 +95,12 @@
             <!-- User Profile -->
             <div class="p-4 border-t border-x-border">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'profile' %}" class="flex items-center justify-between hover:bg-x-lighter rounded-full p-3 cursor-pointer transition-colors">
+                    <a href="{% url 'profile' %}" class="flex items-center justify-between hover:bg-x-darker rounded-full p-3 cursor-pointer transition-colors">
                         <div class="flex items-center">
                             {% if user.profile.avatar %}
                                 <img src="{{ user.profile.avatar.url }}" class="w-10 h-10 rounded-full object-cover" alt="Avatar">
                             {% else %}
-                                <div class="w-10 h-10 rounded-full bg-x-lighter flex items-center justify-center">
+                                <div class="w-10 h-10 rounded-full bg-x-darker flex items-center justify-center">
                                     <svg class="w-5 h-5 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                     </svg>
@@ -115,7 +120,7 @@
                         <a href="{% url 'login' %}" class="block w-full bg-x-blue hover:bg-x-blue-hover text-white font-bold py-2 px-4 rounded-full text-center transition-colors">
                             Se connecter
                         </a>
-                        <a href="{% url 'register' %}" class="block w-full border border-x-border hover:bg-x-lighter text-x-text font-bold py-2 px-4 rounded-full text-center transition-colors">
+                        <a href="{% url 'register' %}" class="block w-full border border-x-border hover:bg-x-darker text-x-text font-bold py-2 px-4 rounded-full text-center transition-colors">
                             S'inscrire
                         </a>
                     </div>

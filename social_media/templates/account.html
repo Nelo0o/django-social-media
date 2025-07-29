@@ -6,22 +6,22 @@
 <!-- Main Content Area -->
 <div class="flex-1 max-w-2xl border-x border-x-border">
     <!-- Header -->
-    <div class="sticky top-0 bg-x-black/80 backdrop-blur-md border-b border-x-border p-4">
-        <h1 class="text-xl font-bold">Mon Compte</h1>
+    <div class="sticky top-0 bg-x-white/95 backdrop-blur-md border-b border-x-border p-4">
+        <h1 class="text-xl font-bold text-x-text">Mon Compte</h1>
     </div>
     
     <!-- Profile Content -->
     <div class="p-6">
         <!-- Profile Header -->
-        <div class="bg-x-darker rounded-xl p-6 mb-6">
+        <div class="bg-x-white rounded-xl p-6 mb-6 border border-x-border">
             <div class="flex items-start space-x-4">
                 <!-- Avatar -->
                 <div class="flex-shrink-0">
                     {% if profile.avatar %}
                         <img src="{{ profile.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border-2 border-x-border">
                     {% else %}
-                        <div class="w-20 h-20 rounded-full bg-x-gray flex items-center justify-center">
-                            <svg class="w-10 h-10 text-x-light-gray" fill="currentColor" viewBox="0 0 24 24">
+                        <div class="w-20 h-20 rounded-full bg-x-lighter flex items-center justify-center">
+                            <svg class="w-10 h-10 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
                         </div>

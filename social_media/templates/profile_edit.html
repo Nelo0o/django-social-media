@@ -6,14 +6,14 @@
 <!-- Main Content Area -->
 <div class="flex-1 max-w-2xl border-x border-x-border">
     <!-- Header -->
-    <div class="sticky top-0 bg-x-black/80 backdrop-blur-md border-b border-x-border p-4">
+    <div class="sticky top-0 bg-x-white/95 backdrop-blur-md border-b border-x-border p-4">
         <div class="flex items-center">
-            <a href="{% url 'profile' %}" class="mr-4 p-2 rounded-full hover:bg-x-darker transition-colors">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <a href="{% url 'profile' %}" class="mr-4 p-2 rounded-full hover:bg-x-lighter transition-colors">
+                <svg class="w-5 h-5 text-x-text" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                 </svg>
             </a>
-            <h1 class="text-xl font-bold">Modifier le profil</h1>
+            <h1 class="text-xl font-bold text-x-text">Modifier le profil</h1>
         </div>
     </div>
     
@@ -33,57 +33,57 @@
             {% endif %}
             
             <!-- Avatar Section -->
-            <div class="bg-x-darker rounded-xl p-6">
-                <h3 class="text-lg font-semibold text-white mb-4">Photo de profil</h3>
+            <div class="bg-x-white rounded-xl p-6 border border-x-border">
+                <h3 class="text-lg font-semibold text-x-text mb-4">Photo de profil</h3>
                 <div class="flex items-center space-x-4">
                     <div class="flex-shrink-0">
                         {% if form.avatar.value %}
                             <img src="{{ form.avatar.value.url }}" alt="Avatar actuel" class="w-20 h-20 rounded-full object-cover border-2 border-x-border">
                         {% else %}
-                            <div class="w-20 h-20 rounded-full bg-x-gray flex items-center justify-center">
-                                <svg class="w-10 h-10 text-x-light-gray" fill="currentColor" viewBox="0 0 24 24">
+                            <div class="w-20 h-20 rounded-full bg-x-lighter flex items-center justify-center">
+                                <svg class="w-10 h-10 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                 </svg>
                             </div>
                         {% endif %}
                     </div>
                     <div class="flex-1">
-                        <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
+                        <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-x-gray mb-2">
                             Changer la photo
                         </label>
                         <input type="file" 
                                name="{{ form.avatar.name }}" 
                                id="{{ form.avatar.id_for_label }}"
                                accept="image/*"
-                               class="block w-full text-sm text-x-gray file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-x-blue file:text-white hover:file:bg-x-blue-hover transition-colors">
+                               class="block w-full text-sm text-x-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-x-blue file:text-white hover:file:bg-x-blue-hover transition-colors">
                     </div>
                 </div>
             </div>
             
             <!-- Profile Information -->
-            <div class="bg-x-darker rounded-xl p-6">
-                <h3 class="text-lg font-semibold text-white mb-4">Informations personnelles</h3>
+            <div class="bg-x-white rounded-xl p-6 border border-x-border">
+                <h3 class="text-lg font-semibold text-x-text mb-4">Informations personnelles</h3>
                 <div class="space-y-4">
                     <div>
-                        <label for="{{ form.bio.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
+                        <label for="{{ form.bio.id_for_label }}" class="block text-sm font-medium text-x-gray mb-2">
                             Biographie
                         </label>
                         <textarea name="{{ form.bio.name }}" 
                                   id="{{ form.bio.id_for_label }}"
                                   rows="4"
-                                  class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-white placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors resize-none"
+                                  class="w-full px-4 py-3 bg-x-light border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors resize-none"
                                   placeholder="Parlez-nous de vous...">{% if form.bio.value %}{{ form.bio.value }}{% endif %}</textarea>
                         <p class="text-x-gray text-sm mt-1">Décrivez-vous en quelques mots</p>
                     </div>
                     
                     <div>
-                        <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
+                        <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-x-gray mb-2">
                             Ville
                         </label>
                         <input type="text" 
                                name="{{ form.city.name }}" 
                                id="{{ form.city.id_for_label }}"
-                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-white placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               class="w-full px-4 py-3 bg-x-light border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
                                placeholder="Votre ville"
                                {% if form.city.value %}value="{{ form.city.value }}"{% endif %}>
                     </div>

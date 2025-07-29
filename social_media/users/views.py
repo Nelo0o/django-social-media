@@ -12,7 +12,7 @@ from .models import UserProfile
 class RegisterView(FormView):
     template_name = "register.html"
     form_class = InscriptionForm
-    success_url = reverse_lazy('users:account')
+    success_url = reverse_lazy('profile')
 
     def form_valid(self, form):
         user = form.save()
@@ -34,7 +34,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm
     template_name = 'profile_edit.html'
-    success_url = reverse_lazy('users:account')
+    success_url = reverse_lazy('profile')
     
     def get_object(self):
         return self.request.user.profile

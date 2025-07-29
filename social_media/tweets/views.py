@@ -6,8 +6,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Tweet
-from .forms import TweetForm
+from .models import Tweet, Comment
+from .forms import TweetForm, CommentForm
 
 
 class TweetCreateView(LoginRequiredMixin, CreateView):
@@ -51,3 +51,28 @@ def like_tweet(request, tweet_id):
     # Sinon, redirection classique pour compatibilité
     messages.success(request, message)
     return redirect(request.META.get('HTTP_REFERER', 'core:home'))
+
+
+def tweet_detail(request, tweet_id):
+    """Affiche un tweet avec ses commentaires"""
+    tweet = get_object_or_404(Tweet, id=tweet_id)
+    comments = tweet.comments.select_related('author__user').order_by('created_at')
+    
+    if request.method == 'POST' and request.user.is_authenticated:
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.tweet = tweet
+            comment.author = request.user.profile
+            comment.save()
+            messages.success(request, 'Commentaire ajouté avec succès!')
+            return redirect('tweets:detail', tweet_id=tweet.id)
+    else:
+        comment_form = CommentForm() if request.user.is_authenticated else None
+    
+    context = {
+        'tweet': tweet,
+        'comments': comments,
+        'comment_form': comment_form,
+    }
+    return render(request, 'tweet_detail.html', context)

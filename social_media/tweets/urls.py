@@ -5,5 +5,6 @@ app_name = 'tweets'
 
 urlpatterns = [
     path('create/', views.TweetCreateView.as_view(), name='create'),
+    path('<int:tweet_id>/', views.tweet_detail, name='detail'),
     path('<int:tweet_id>/like/', views.like_tweet, name='like'),
 ]

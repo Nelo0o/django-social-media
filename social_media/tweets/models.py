@@ -1,4 +1,5 @@
 from django.db import models
+import re
 
 
 class Tweet(models.Model):
@@ -14,6 +15,18 @@ class Tweet(models.Model):
     
     def __str__(self):
         return f"{self.author.user.username}: {self.content[:50]}"
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        hashtags = re.findall(r'#(\w+)', self.content, re.IGNORECASE)
+        self.hashtags.clear()
+        for tag in hashtags:
+            hashtag, created = Hashtag.objects.get_or_create(label=tag.lower())
+            self.hashtags.add(hashtag)
+    
+    def get_content_without_hashtags(self):
+        """Retourne le contenu sans les hashtags"""
+        return re.sub(r'#\w+', '', self.content).strip()
 
 
 class Comment(models.Model):

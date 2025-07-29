@@ -7,7 +7,7 @@ class Tweet(models.Model):
     image = models.ImageField(upload_to='tweets/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     retweet_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='retweets')
-    hashtags = models.ManyToManyField(Hashtag, blank=True, related_name='tweets')
+    hashtags = models.ManyToManyField('Hashtag', blank=True, related_name='tweets')
     
     class Meta:
         ordering = ['-created_at']

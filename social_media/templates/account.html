@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Compte{% endblock %}
+
+{% block content %}
+<h1>Mon Compte</h1>
+
+<h2>{{ user.username }}</h2>
+<p>Email: {{ user.email }}</p>
+<p>Ville: {{ profile.city|default:"Non renseignée" }}</p>
+<p>Bio: {{ profile.bio|default:"Aucune biographie" }}</p>
+<p>Membre depuis: {{ profile.date_joined|date:"d/m/Y" }}</p>
+
+{% if profile.avatar %}
+    <img src="{{ profile.avatar.url }}" alt="Avatar">
+{% endif %}
+
+<p>
+    <a href="{% url 'profile_edit' %}">Modifier le profil</a> |
+    <a href="{% url 'logout' %}">Se déconnecter</a>
+</p>
+{% endblock %}

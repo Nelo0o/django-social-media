@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier le profil{% endblock %}
+
+{% block content %}
+<h1>Modifier le profil</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Sauvegarder</button>
+</form>
+
+<p><a href="{% url 'account' %}">Retour au compte</a></p>
+{% endblock %}

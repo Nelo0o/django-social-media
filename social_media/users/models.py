@@ -11,6 +11,7 @@ class UserProfile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
+# utiliser les property
     class Meta:
         verbose_name = 'User Profile'
         verbose_name_plural = 'User Profiles'

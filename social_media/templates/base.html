@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}X{% endblock %}</title>
+    <title>{% block title %}Z{% endblock %}</title>
+    
+    <!-- Favicon -->
+    {% load static %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/logo-z.svg' %}">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,14 +16,15 @@
             theme: {
                 extend: {
                     colors: {
-                        'x-black': '#000000',
-                        'x-dark': '#16181c',
-                        'x-darker': '#1c1f23',
-                        'x-blue': '#1d9bf0',
-                        'x-blue-hover': '#1a8cd8',
-                        'x-gray': '#536471',
-                        'x-light-gray': '#71767b',
-                        'x-border': '#2f3336'
+                        'x-white': '#ffffff',
+                        'x-light': '#f8fafc',
+                        'x-lighter': '#f1f5f9',
+                        'x-blue': '#3b82f6',
+                        'x-blue-hover': '#2563eb',
+                        'x-gray': '#64748b',
+                        'x-dark-gray': '#475569',
+                        'x-border': '#e2e8f0',
+                        'x-text': '#1e293b'
                     }
                 }
             }
@@ -28,16 +33,14 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-x-black text-white h-full">
+<body class="bg-x-light text-x-text h-full">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-x-black border-r border-x-border flex flex-col">
+        <div class="w-64 bg-x-white border-r border-x-border flex flex-col shadow-sm">
             <!-- Logo -->
             <div class="p-4">
                 <a href="{% url 'core:home' %}" class="block">
-                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
+                    <img src="{% static 'images/logo-z.png' %}" alt="Z" class="w-12 h-12">
                 </a>
             </div>
             
@@ -45,35 +48,35 @@
             <nav class="flex-1 px-4">
                 <ul class="space-y-2">
                     <li>
-                        <a href="{% url 'core:home' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors">
+                        <a href="{% url 'core:home' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                             </svg>
-                            <span class="text-xl">Accueil</span>
+                            Accueil
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors">
+                        <a href="#" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                             </svg>
-                            <span class="text-xl">Explorer</span>
+                            Explorer
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors">
+                        <a href="#" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M15 17h5l-5 5v-5zM4 1h5v5H4V1zm0 7h5v5H4V8zm0 7h5v5H4v-5zM11 1h5v5h-5V1zm0 7h5v5h-5V8z"/>
                             </svg>
-                            <span class="text-xl">Notifications</span>
+                            Notifications
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="flex items-center px-3 py-3 rounded-full hover:bg-x-darker transition-colors">
+                        <a href="{% url 'account' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
-                            <span class="text-xl">Profil</span>
+                            Profil
                         </a>
                     </li>
                 </ul>
@@ -86,18 +89,37 @@
             
             <!-- User Profile -->
             <div class="p-4 border-t border-x-border">
-                <div class="flex items-center justify-between hover:bg-x-darker rounded-full p-3 cursor-pointer transition-colors">
-                    <div class="flex items-center">
-                        <img src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full" alt="Avatar">
-                        <div class="ml-3">
-                            <div class="font-bold">Utilisateur</div>
-                            <div class="text-x-gray text-sm">@utilisateur</div>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'account' %}" class="flex items-center justify-between hover:bg-x-lighter rounded-full p-3 cursor-pointer transition-colors">
+                        <div class="flex items-center">
+                            {% if user.userprofile.avatar %}
+                                <img src="{{ user.userprofile.avatar.url }}" class="w-10 h-10 rounded-full object-cover" alt="Avatar">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-x-lighter flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                            <div class="ml-3">
+                                <div class="font-bold text-x-text">{{ user.username }}</div>
+                                <div class="text-x-gray text-sm">@{{ user.username }}</div>
+                            </div>
                         </div>
+                        <svg class="w-5 h-5 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14l-6-6z"/>
+                        </svg>
+                    </a>
+                {% else %}
+                    <div class="space-y-2">
+                        <a href="{% url 'login' %}" class="block w-full bg-x-blue hover:bg-x-blue-hover text-white font-bold py-2 px-4 rounded-full text-center transition-colors">
+                            Se connecter
+                        </a>
+                        <a href="{% url 'signup' %}" class="block w-full border border-x-border hover:bg-x-lighter text-x-text font-bold py-2 px-4 rounded-full text-center transition-colors">
+                            S'inscrire
+                        </a>
                     </div>
-                    <svg class="w-5 h-5 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                </div>
+                {% endif %}
             </div>
         </div>
         

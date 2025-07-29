@@ -1,15 +1,110 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Inscription{% endblock %}
+{% block title %}Inscription - Z{% endblock %}
 
 {% block content %}
-<h1>Inscription</h1>
+<!-- Main Content Area -->
+<div class="flex-1 max-w-2xl border-x border-x-border">
+    <!-- Header -->
+    <div class="sticky top-0 bg-x-black/80 backdrop-blur-md border-b border-x-border p-4">
+        <h1 class="text-xl font-bold">Inscription</h1>
+    </div>
+    
+    <!-- Registration Form -->
+    <div class="p-8">
+        <div class="max-w-md mx-auto">
+            <!-- Logo -->
+            <div class="text-center mb-8">
+                <img src="{% static 'images/logo-z.svg' %}" alt="Z" class="w-12 h-12 mx-auto mb-4">
+                <h2 class="text-2xl font-bold mb-2">Rejoignez Z aujourd'hui</h2>
+            </div>
+            
+            <!-- Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                    <div class="bg-red-900/20 border border-red-500 rounded-lg p-4">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p class="text-red-400 text-sm">{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
+                            Nom d'utilisateur
+                        </label>
+                        <input type="text" 
+                               name="{{ form.username.name }}" 
+                               id="{{ form.username.id_for_label }}"
+                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-white placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               placeholder="Choisissez un nom d'utilisateur"
+                               {% if form.username.value %}value="{{ form.username.value }}"{% endif %}
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
+                            Email
+                        </label>
+                        <input type="email" 
+                               name="{{ form.email.name }}" 
+                               id="{{ form.email.id_for_label }}"
+                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-white placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               placeholder="Entrez votre email"
+                               {% if form.email.value %}value="{{ form.email.value }}"{% endif %}
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
+                            Mot de passe
+                        </label>
+                        <input type="password" 
+                               name="{{ form.password1.name }}" 
+                               id="{{ form.password1.id_for_label }}"
+                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-white placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               placeholder="Choisissez un mot de passe"
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-x-light-gray mb-2">
+                            Confirmez le mot de passe
+                        </label>
+                        <input type="password" 
+                               name="{{ form.password2.name }}" 
+                               id="{{ form.password2.id_for_label }}"
+                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-white placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               placeholder="Confirmez votre mot de passe"
+                               required>
+                    </div>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-white text-black font-bold py-3 px-6 rounded-full hover:bg-gray-200 transition-colors">
+                    S'inscrire
+                </button>
+            </form>
+            
+            <!-- Login link -->
+            <div class="text-center mt-8">
+                <p class="text-x-gray">
+                    Vous avez déjà un compte ?
+                    <a href="{% url 'login' %}" class="text-x-blue hover:underline">Se connecter</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">S'inscrire</button>
-</form>
-
-<p><a href="{% url 'login' %}">Se connecter</a></p>
+<!-- Right Sidebar (empty for registration) -->
+<div class="w-80 p-4">
+    <!-- Could add terms of service, privacy policy, etc. -->
+</div>
 {% endblock %}

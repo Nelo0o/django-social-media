@@ -34,6 +34,9 @@ urlpatterns = [
     path('profile/', user_views.AccountView.as_view(), name='profile'),
     path('profile/edit/', user_views.ProfileUpdateView.as_view(), name='profile_edit'),
     
+    # URLs des tweets
+    path('tweets/', include('tweets.urls')),
+    
     # Garder users/ pour d'autres fonctionnalités futures
     path('users/', include('users.urls')),
 ]

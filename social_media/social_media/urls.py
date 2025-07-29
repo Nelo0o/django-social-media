@@ -17,17 +17,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from users.views import InscriptionView, AccountView, ProfileUpdateView, CustomLogoutView
+from users import views as user_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('users.urls')),
     path('', include('core.urls')),
     
-    # Authentification
+    # URLs d'authentification courtes
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-    path('logout/', CustomLogoutView.as_view(), name='logout'),
-    path('signup/', InscriptionView.as_view(), name='signup'),
-    path('account/', AccountView.as_view(), name='account'),
-    path('profile/edit/', ProfileUpdateView.as_view(), name='profile_edit'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path('register/', user_views.RegisterView.as_view(), name='register'),
+    
+    # URLs de profil courtes
+    path('profile/', user_views.AccountView.as_view(), name='profile'),
+    path('profile/edit/', user_views.ProfileUpdateView.as_view(), name='profile_edit'),
+    
+    # Garder users/ pour d'autres fonctionnalités futures
+    path('users/', include('users.urls')),
 ]

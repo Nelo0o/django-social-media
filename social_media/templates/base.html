@@ -72,7 +72,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'account' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
+                        <a href="{% url 'profile' %}" class="flex items-center px-3 py-3 rounded-full hover:bg-x-lighter transition-colors text-x-text hover:text-x-blue">
                             <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
@@ -90,7 +90,7 @@
             <!-- User Profile -->
             <div class="p-4 border-t border-x-border">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'account' %}" class="flex items-center justify-between hover:bg-x-lighter rounded-full p-3 cursor-pointer transition-colors">
+                    <a href="{% url 'profile' %}" class="flex items-center justify-between hover:bg-x-lighter rounded-full p-3 cursor-pointer transition-colors">
                         <div class="flex items-center">
                             {% if user.userprofile.avatar %}
                                 <img src="{{ user.userprofile.avatar.url }}" class="w-10 h-10 rounded-full object-cover" alt="Avatar">
@@ -115,7 +115,7 @@
                         <a href="{% url 'login' %}" class="block w-full bg-x-blue hover:bg-x-blue-hover text-white font-bold py-2 px-4 rounded-full text-center transition-colors">
                             Se connecter
                         </a>
-                        <a href="{% url 'signup' %}" class="block w-full border border-x-border hover:bg-x-lighter text-x-text font-bold py-2 px-4 rounded-full text-center transition-colors">
+                        <a href="{% url 'register' %}" class="block w-full border border-x-border hover:bg-x-lighter text-x-text font-bold py-2 px-4 rounded-full text-center transition-colors">
                             S'inscrire
                         </a>
                     </div>

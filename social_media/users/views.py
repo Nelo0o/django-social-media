@@ -1,16 +1,16 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from django.contrib import messages
 from .forms import InscriptionForm, UserProfileForm
 from .models import UserProfile
 
 
 class InscriptionView(FormView):
-    template_name = "registration/register.html"
+    template_name = "register.html"
     form_class = InscriptionForm
     success_url = reverse_lazy('account')
 
@@ -30,8 +30,6 @@ class AccountView(LoginRequiredMixin, TemplateView):
         return context
 
 
-
-
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm
@@ -44,3 +42,18 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Profil mis à jour!')
         return super().form_valid(form)
+
+
+class CustomLogoutView(LoginRequiredMixin, View):
+
+    def get(self, request):
+        return self.logout_user(request)
+    
+    def post(self, request):
+        return self.logout_user(request)
+    
+    def logout_user(self, request):
+        username = request.user.username
+        logout(request)
+        messages.success(request, f'Au revoir {username}!')
+        return redirect('core:home')

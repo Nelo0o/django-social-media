@@ -124,7 +124,7 @@ class FollowManager:
             raise ValidationError("Vous ne pouvez pas vous suivre vous-même")
         
         if self.is_following(user_profile):
-            return False  # Déjà suivi
+            return False  # Prévenir l'auto-suivi 
         
         follow_relation, created = self._follow_model.objects.get_or_create(
             follower=self.user_profile,

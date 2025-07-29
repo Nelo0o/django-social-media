@@ -36,6 +36,7 @@ class AccountView(TemplateView):
         context = super().get_context_data(**kwargs)
         username = kwargs.get('username')
         
+        # Afficher son profil OU celui d'un autre utilisateur
         if username:
             # Affichage d'un profil public
             profile_user = get_object_or_404(User, username=username)

@@ -189,20 +189,33 @@
         
         <!-- Action Buttons (seulement pour son propre profil) -->
         {% if is_own_profile %}
-        <div class="flex space-x-4">
-            <a href="{% url 'profile_edit' %}" 
-               class="flex-1 bg-x-blue hover:bg-x-blue-hover text-white font-bold py-3 px-6 rounded-full text-center transition-colors">
-                Modifier le profil
-            </a>
+        <div class="space-y-4">
+            <div class="flex space-x-4">
+                <a href="{% url 'profile_edit' %}" 
+                   class="flex-1 bg-x-blue hover:bg-x-blue-hover text-white font-bold py-3 px-6 rounded-full text-center transition-colors">
+                    Modifier le profil
+                </a>
+                
+                <form method="post" action="{% url 'logout' %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="w-full bg-x-gray hover:bg-x-dark-gray text-white font-bold py-3 px-6 rounded-full transition-colors"
+                            onclick="return confirm('Voulez-vous vraiment vous déconnecter ?')">
+                        Se déconnecter
+                    </button>
+                </form>
+            </div>
             
-            <form method="post" action="{% url 'logout' %}" class="flex-1">
-                {% csrf_token %}
-                <button type="submit" 
-                        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition-colors"
-                        onclick="return confirm('Voulez-vous vraiment vous déconnecter ?')">
-                    Se déconnecter
-                </button>
-            </form>
+            <div class="flex">
+                <form method="post" action="{% url 'delete_account' %}" class="w-full" id="delete-form">
+                    {% csrf_token %}
+                    <button type="button" 
+                            class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition-colors"
+                            onclick="confirmDeleteAccount()">
+                        Supprimer le compte
+                    </button>
+                </form>
+            </div>
         </div>
         {% endif %}
     </div>
@@ -310,8 +323,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function confirmDeleteAccount() {
+    const confirmation = confirm("Êtes-vous sûr(e) de vouloir supprimer votre compte ?");
+    
+    if (confirmation) {
+        document.getElementById('delete-form').submit();
+    }
+}
 </script>
 
-<!-- Token CSRF pour les requêtes AJAX -->
 {% csrf_token %}
 {% endblock %}

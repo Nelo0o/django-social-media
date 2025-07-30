@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse_lazy
@@ -22,7 +22,7 @@ class RegisterView(FormView):
 
     def form_valid(self, form):
         user = form.save()
-        login(self.request, user)
+        login(self.request, user, backend='users.backends.EmailBackend')
         messages.success(self.request, f'Bienvenue {user.username}!')
         return super().form_valid(form)
 
@@ -115,9 +115,6 @@ class PublicProfileView(TemplateView):
         return context
 
 
-
-
-
 class UserSearchView(TemplateView):
     template_name = 'user_search.html'
     
@@ -196,3 +193,22 @@ def user_suggestions(request):
     return JsonResponse({
         'suggestions': suggestions_data
     })
+
+
+@login_required
+def delete_account(request):
+    """Vue pour supprimer le compte utilisateur"""
+    if request.method == 'POST':
+        user = request.user
+        username = user.username
+        
+        # Déconnecter l'utilisateur
+        logout(request)
+        
+        # Supprimer l'utilisateur (cascade supprimera automatiquement le profil)
+        user.delete()
+        
+        messages.success(request, f'Le compte {username} a été supprimé avec succès.')
+        return redirect('home')
+    
+    return redirect('profile')

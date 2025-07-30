@@ -56,15 +56,23 @@ class AccountView(LoginRequiredMixin, TemplateView):
             context['is_own_profile'] = True
             context['is_following'] = False
         
-        # Récupérer les tweets de l'utilisateur affiché
+        # Récupérer TOUS les tweets de l'utilisateur (originaux + retweets)
         user_tweets = Tweet.objects.filter(
             author=context['profile']
-        ).select_related('author', 'author__user').prefetch_related('likes').order_by('-created_at')
+        ).select_related(
+            'author__user', 'retweet_of__author__user'
+        ).prefetch_related(
+            'likes', 'comments', 'retweets', 'hashtags',
+            'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
+        ).order_by('-created_at')
         
-        # Ajouter les informations de like pour l'utilisateur connecté
+        # Ajouter les informations pour l'utilisateur connecté
         if self.request.user.is_authenticated:
+            user_profile = self.request.user.profile
             for tweet in user_tweets:
-                tweet.is_liked_by_user = tweet.likes.filter(user=self.request.user.profile).exists()
+                original_tweet = tweet.original_tweet
+                tweet.is_liked_by_user = original_tweet.likes.filter(user=user_profile).exists()
+                tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
         
         context['user_tweets'] = user_tweets
         context['tweets_count'] = user_tweets.count()

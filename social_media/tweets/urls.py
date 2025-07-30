@@ -7,4 +7,6 @@ urlpatterns = [
     path('create/', views.TweetCreateView.as_view(), name='create'),
     path('<int:tweet_id>/', views.tweet_detail, name='detail'),
     path('<int:tweet_id>/like/', views.like_tweet, name='like'),
+    path('<int:tweet_id>/retweet/', views.retweet_tweet, name='retweet'),
+    path('<int:tweet_id>/unretweet/', views.unretweet_tweet, name='unretweet'),
 ]

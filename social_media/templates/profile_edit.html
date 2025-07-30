@@ -40,10 +40,10 @@
                         {% if form.avatar.value %}
                             <img src="{{ form.avatar.value.url }}" alt="Avatar actuel" class="w-20 h-20 rounded-full object-cover border-2 border-x-border">
                         {% else %}
-                            <div class="w-20 h-20 rounded-full bg-x-lighter flex items-center justify-center">
-                                <svg class="w-10 h-10 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
+                            <div class="w-12 h-12 rounded-full bg-x-blue flex items-center justify-center">
+                              <span class="text-white font-bold">
+                                  {{ user_profile.user.username|first|upper }}
+                              </span>
                             </div>
                         {% endif %}
                     </div>

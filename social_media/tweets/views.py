@@ -53,10 +53,95 @@ def like_tweet(request, tweet_id):
     return redirect(request.META.get('HTTP_REFERER', 'core:home'))
 
 
+@login_required
+@require_POST
+def retweet_tweet(request, tweet_id):
+    """Vue pour retweeter un tweet"""
+    original_tweet = get_object_or_404(Tweet, id=tweet_id)
+    user_profile = request.user.profile
+    
+    # Vérifier si l'utilisateur essaie de retweeter son propre tweet
+    if original_tweet.author == user_profile:
+        return JsonResponse({
+            'success': False,
+            'error': 'Vous ne pouvez pas retweeter votre propre tweet'
+        }, status=400)
+    
+    # Vérifier si déjà retweeté
+    existing_retweet = Tweet.objects.filter(
+        author=user_profile,
+        retweet_of=original_tweet
+    ).first()
+    
+    if existing_retweet:
+        return JsonResponse({
+            'success': False,
+            'retweeted': True,
+            'retweet_count': original_tweet.retweet_count,
+            'message': 'Vous avez déjà retweeté ce tweet'
+        })
+    
+    # Créer le retweet
+    retweet = Tweet.objects.create(
+        author=user_profile,
+        content='',  # Les retweets n'ont pas de contenu propre
+        retweet_of=original_tweet
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'retweeted': True,
+        'retweet_count': original_tweet.retweet_count,
+        'message': 'Tweet retweeté avec succès'
+    })
+
+
+@login_required
+@require_POST
+def unretweet_tweet(request, tweet_id):
+    """Vue pour annuler un retweet"""
+    original_tweet = get_object_or_404(Tweet, id=tweet_id)
+    user_profile = request.user.profile
+    
+    # Trouver et supprimer le retweet
+    retweet = Tweet.objects.filter(
+        author=user_profile,
+        retweet_of=original_tweet
+    ).first()
+    
+    if retweet:
+        retweet.delete()
+        retweeted = False
+        message = 'Retweet annulé'
+    else:
+        retweeted = False
+        message = 'Vous n\'aviez pas retweeté ce tweet'
+    
+    return JsonResponse({
+        'success': True,
+        'retweeted': retweeted,
+        'retweet_count': original_tweet.retweet_count,
+        'message': message
+    })
+
+
 def tweet_detail(request, tweet_id):
     """Affiche un tweet avec ses commentaires"""
-    tweet = get_object_or_404(Tweet, id=tweet_id)
+    tweet = get_object_or_404(Tweet.objects.select_related(
+        'author__user', 'retweet_of__author__user'
+    ).prefetch_related(
+        'likes', 'comments', 'retweets', 'hashtags',
+        'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
+    ), id=tweet_id)
+    
     comments = tweet.comments.select_related('author__user').order_by('created_at')
+    
+    # Ajouter les informations pour l'utilisateur connecté
+    if request.user.is_authenticated:
+        user_profile = request.user.profile
+        original_tweet = tweet.original_tweet
+        tweet.is_liked_by_user = original_tweet.likes.filter(user=user_profile).exists()
+        tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
     
     if request.method == 'POST' and request.user.is_authenticated:
         comment_form = CommentForm(request.POST)

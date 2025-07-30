@@ -181,6 +181,13 @@
                             <!-- Tweet Text -->
                             <div class="text-x-text mb-3 whitespace-pre-wrap">{{ tweet.content }}</div>
                             
+                            <!-- Tweet Image -->
+                            {% if tweet.image %}
+                            <div class="mb-3 rounded-2xl overflow-hidden border border-x-border">
+                                <img src="{{ tweet.image.url }}" alt="Image du tweet" class="w-full h-auto max-h-96 object-cover">
+                            </div>
+                            {% endif %}
+                            
                             <!-- Actions -->
                             <div class="flex items-center space-x-6 text-x-gray">
                                 <!-- Commentaires -->

@@ -4,9 +4,9 @@
 
 {% block content %}
 <!-- Main Content Area -->
-<div class="flex-1 max-w-2xl border-x border-x-border">
+<div class="flex-1 max-w-2xl border-x border-x-border bg-x-dark/10">
     <!-- Header -->
-    <div class="sticky top-0 bg-x-black/95 backdrop-blur-md border-b border-x-border p-4">
+    <div class="sticky top-0 bg-x-dark/95 backdrop-blur-md border-b border-x-border p-4">
         <h1 class="text-xl font-bold text-x-text">
             {% if is_own_profile %}
                 Mon Compte
@@ -19,14 +19,14 @@
     <!-- Profile Content -->
     <div class="p-6">
         <!-- Profile Header -->
-        <div class="bg-x-white rounded-xl p-6 mb-6 border border-x-border">
+        <div class="bg-x-darker/30 rounded-xl p-6 mb-6 border border-x-border">
             <div class="flex items-start space-x-4">
                 <!-- Avatar -->
                 <div class="flex-shrink-0">
                     {% if profile.avatar %}
                         <img src="{{ profile.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border-2 border-x-border">
                     {% else %}
-                        <div class="w-20 h-20 rounded-full bg-x-darker flex items-center justify-center">
+                        <div class="w-20 h-20 rounded-full bg-x-purple/20 flex items-center justify-center">
                             <svg class="w-10 h-10 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
@@ -112,7 +112,7 @@
         </div>
         
         <!-- Statistiques -->
-        <div class="bg-x-white rounded-xl p-6 mb-6 border border-x-border">
+        <div class="bg-x-darker/30 rounded-xl p-6 mb-6 border border-x-border">
             <h3 class="text-lg font-semibold text-x-text mb-4">Statistiques</h3>
             <div class="flex space-x-6">
                 <div class="text-center">
@@ -264,7 +264,7 @@
         
         {% if is_own_profile %}
         <!-- Account Details (seulement pour son propre profil) -->
-        <div class="bg-x-white rounded-xl p-6 mb-6 border border-x-border">
+        <div class="bg-x-darker/30 rounded-xl p-6 mb-6 border border-x-border">
             <h3 class="text-lg font-semibold text-x-text mb-4">Informations du compte</h3>
             <div class="space-y-3">
                 <div class="flex justify-between items-center py-2 border-b border-x-border">

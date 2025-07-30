@@ -10,7 +10,7 @@ class TweetForm(forms.ModelForm):
         fields = ['content', 'image']
         widgets = {
             'content': forms.Textarea(attrs={
-                'class': 'w-full p-3 border border-x-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-x-blue focus:border-transparent',
+                'class': 'w-full p-3 bg-x-darker border border-x-border rounded-lg resize-none text-x-text placeholder-x-gray focus:outline-none focus:ring-2 focus:ring-x-purple focus:border-x-purple',
                 'placeholder': "Quoi de neuf ?",
                 'rows': 3,
                 'maxlength': 280

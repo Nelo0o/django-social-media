@@ -5,9 +5,9 @@
 
 {% block content %}
 <!-- Main Content Area -->
-<div class="flex-1 max-w-2xl border-x border-x-border">
+<div class="flex-1 max-w-2xl border-x border-x-border bg-x-dark/10">
     <!-- Header -->
-    <div class="sticky top-0 bg-x-black/80 backdrop-blur-md border-b border-x-border p-4">
+    <div class="sticky top-0 bg-x-dark/95 backdrop-blur-md border-b border-x-border p-4">
         <h1 class="text-xl font-bold text-x-text">Inscription</h1>
     </div>
     
@@ -42,7 +42,7 @@
                         <input type="text" 
                                name="{{ form.username.name }}" 
                                id="{{ form.username.id_for_label }}"
-                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               class="w-full px-4 py-3 bg-x-darker border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-purple focus:ring-1 focus:ring-x-purple transition-colors"
                                placeholder="Choisissez un nom d'utilisateur"
                                {% if form.username.value %}value="{{ form.username.value }}"{% endif %}
                                required>
@@ -55,7 +55,7 @@
                         <input type="email" 
                                name="{{ form.email.name }}" 
                                id="{{ form.email.id_for_label }}"
-                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               class="w-full px-4 py-3 bg-x-darker border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-purple focus:ring-1 focus:ring-x-purple transition-colors"
                                placeholder="Entrez votre email"
                                {% if form.email.value %}value="{{ form.email.value }}"{% endif %}
                                required>
@@ -68,7 +68,7 @@
                         <input type="password" 
                                name="{{ form.password1.name }}" 
                                id="{{ form.password1.id_for_label }}"
-                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               class="w-full px-4 py-3 bg-x-darker border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-purple focus:ring-1 focus:ring-x-purple transition-colors"
                                placeholder="Choisissez un mot de passe"
                                required>
                     </div>
@@ -80,7 +80,7 @@
                         <input type="password" 
                                name="{{ form.password2.name }}" 
                                id="{{ form.password2.id_for_label }}"
-                               class="w-full px-4 py-3 bg-x-black border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-blue focus:ring-1 focus:ring-x-blue transition-colors"
+                               class="w-full px-4 py-3 bg-x-darker border border-x-border rounded-lg text-x-text placeholder-x-gray focus:outline-none focus:border-x-purple focus:ring-1 focus:ring-x-purple transition-colors"
                                placeholder="Confirmez votre mot de passe"
                                required>
                     </div>

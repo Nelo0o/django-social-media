@@ -29,7 +29,7 @@ class RegisterView(FormView):
         return super().form_valid(form)
 
 
-class AccountView(TemplateView):
+class AccountView(LoginRequiredMixin, TemplateView):
     template_name = 'account.html'
     
     def get_context_data(self, **kwargs):
@@ -52,8 +52,7 @@ class AccountView(TemplateView):
                 context['is_following'] = False
         else:
             # Affichage du profil de l'utilisateur connecté
-            if not self.request.user.is_authenticated:
-                return redirect('login')
+            # LoginRequiredMixin s'assure que l'utilisateur est connecté
             context['profile_user'] = self.request.user
             context['profile'] = self.request.user.profile
             context['is_own_profile'] = True

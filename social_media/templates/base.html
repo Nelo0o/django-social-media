@@ -16,20 +16,22 @@
             theme: {
                 extend: {
                     colors: {
-                        // Thème bleu foncé Twitter
-                        'x-black': '#15202b',           // Fond principal bleu foncé
-                        'x-dark': '#1a2332',            // Fond secondaire plus foncé
-                        'x-darker': '#253341',          // Fond des cartes/éléments
-                        'x-blue': '#1d9bf0',            // Bleu Twitter principal
-                        'x-blue-hover': '#1a8cd8',     // Bleu hover
-                        'x-blue-dark': '#1565c0',      // Bleu foncé
+                        // Thème City - Violet/Indigo foncé
+                        'x-black': '#2d2b3e',           // Fond principal violet foncé
+                        'x-dark': '#252238',            // Fond secondaire plus foncé
+                        'x-darker': '#3a3650',          // Fond des cartes/éléments
+                        'x-blue': '#7c3aed',            // Violet principal (accent)
+                        'x-blue-hover': '#6d28d9',     // Violet hover
+                        'x-blue-dark': '#5b21b6',      // Violet foncé
+                        'x-purple': '#8b5cf6',          // Violet clair
+                        'x-purple-light': '#a78bfa',   // Violet très clair
                         'x-white': '#ffffff',           // Blanc pur
-                        'x-light-gray': '#8b98a5',     // Texte secondaire
-                        'x-gray': '#6e767d',           // Texte gris
-                        'x-border': '#38444d',         // Bordures
-                        'x-border-light': '#485564',   // Bordures claires
-                        'x-text': '#e7e9ea',           // Texte principal clair
-                        'x-text-secondary': '#71767b'   // Texte secondaire
+                        'x-light-gray': '#9ca3af',     // Texte secondaire
+                        'x-gray': '#6b7280',           // Texte gris
+                        'x-border': '#4b5563',         // Bordures
+                        'x-border-light': '#6b7280',   // Bordures claires
+                        'x-text': '#f3f4f6',           // Texte principal clair
+                        'x-text-secondary': '#9ca3af'   // Texte secondaire
                     }
                 }
             }
@@ -41,7 +43,7 @@
 <body class="bg-x-black text-x-text h-full">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-x-black border-r border-x-border flex flex-col shadow-sm">
+        <div class="w-64 bg-x-black border-r border-x-border flex flex-col shadow-sm fixed h-full overflow-y-auto">
             <!-- Logo -->
             <div class="p-4">
                 <a href="{% url 'core:home' %}" class="block">
@@ -85,11 +87,7 @@
                         </a>
                     </li>
                 </ul>
-                
-                <!-- Tweet Button -->
-                <button class="w-full bg-x-blue hover:bg-x-blue-hover text-white font-bold py-3 px-8 rounded-full mt-6 transition-colors">
-                    Poster
-                </button>
+        
             </nav>
             
             <!-- User Profile -->
@@ -129,7 +127,7 @@
         </div>
         
         <!-- Main Content -->
-        <div class="flex-1 flex">
+        <div class="flex-1 flex ml-64">
             {% block content %}{% endblock %}
         </div>
     </div>

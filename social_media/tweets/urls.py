@@ -10,4 +10,5 @@ urlpatterns = [
     path('<int:tweet_id>/retweet/', views.retweet_tweet, name='retweet'),
     path('<int:tweet_id>/unretweet/', views.unretweet_tweet, name='unretweet'),
     path('<int:tweet_id>/delete/', views.delete_tweet, name='delete'),
+    path('hashtag/<str:hashtag_label>/', views.HashtagTweetsView.as_view(), name='hashtag'),
 ]

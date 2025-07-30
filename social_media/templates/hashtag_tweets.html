@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}#{{ hashtag.label }} / Z{% endblock %}
+
+{% block content %}
+<!-- Feed principal -->
+<div class="flex-1 max-w-2xl border-x border-x-border bg-x-dark/10">
+    <!-- Header -->
+    <div class="sticky top-0 bg-x-dark/95 backdrop-blur-md border-b border-x-border p-4">
+        <div class="flex items-center space-x-3">
+            <a href="{% url 'core:home' %}" class="p-2 rounded-full hover:bg-x-darker transition-colors">
+                <svg class="w-5 h-5 text-x-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-xl font-bold text-x-text">#{{ hashtag.label }}</h1>
+                <p class="text-sm text-x-gray">{{ tweets_count }} tweet{{ tweets_count|pluralize }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Description du hashtag -->
+    <div class="p-4 border-b border-x-border bg-x-purple/5">
+        <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-full bg-x-purple/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-x-purple" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9.5 3h5L13 9h6l-8 10 2-6H7l2.5-10z"/>
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-x-text">#{{ hashtag.label }}</h2>
+                <p class="text-x-gray">Découvrez tous les tweets contenant ce hashtag</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des tweets -->
+    <div>
+        {% if tweets %}
+            {% for tweet in tweets %}
+                {% include 'partials/tweet_card.html' %}
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="p-4 border-b border-x-border">
+                <div class="flex justify-center space-x-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="px-3 py-2 rounded-lg bg-x-darker text-x-text hover:bg-x-purple/20 transition-colors">
+                            Première
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-lg bg-x-darker text-x-text hover:bg-x-purple/20 transition-colors">
+                            Précédente
+                        </a>
+                    {% endif %}
+                    
+                    <span class="px-3 py-2 rounded-lg bg-x-purple text-white">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-lg bg-x-darker text-x-text hover:bg-x-purple/20 transition-colors">
+                            Suivante
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 rounded-lg bg-x-darker text-x-text hover:bg-x-purple/20 transition-colors">
+                            Dernière
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <!-- État vide -->
+            <div class="text-center py-12">
+                <div class="text-x-gray mb-4">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.5 3h5L13 9h6l-8 10 2-6H7l2.5-10z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-x-text mb-2">Aucun tweet trouvé</h3>
+                <p class="text-x-gray mb-6">Il n'y a pas encore de tweets avec le hashtag #{{ hashtag.label }}</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'core:home' %}" class="bg-x-blue text-white px-6 py-2 rounded-full font-medium hover:bg-x-blue-hover transition-colors">
+                    Retour à l'accueil
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons de like (même script que home.html)
+    document.querySelectorAll('.like-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const tweetId = this.dataset.tweetId;
+            const isLiked = this.dataset.liked === 'true';
+            const heartIcon = this.querySelector('.heart-icon');
+            const likesCount = this.querySelector('.likes-count');
+            
+            // Animation immédiate pour un feedback rapide
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Requête AJAX
+            fetch(`/tweets/${tweetId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour l'état du bouton
+                    this.dataset.liked = data.liked.toString();
+                    
+                    // Mettre à jour le compteur
+                    likesCount.textContent = data.likes_count;
+                    
+                    // Mettre à jour l'apparence du cœur avec animation
+                    if (data.liked) {
+                        // Cœur devient rouge (liked)
+                        heartIcon.classList.add('text-red-500', 'fill-current');
+                        heartIcon.classList.remove('stroke-current', 'fill-none');
+                        
+                        // Animation de "pop" pour le like
+                        heartIcon.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            heartIcon.style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        // Cœur redevient gris (unliked)
+                        heartIcon.classList.remove('text-red-500', 'fill-current');
+                        heartIcon.classList.add('stroke-current', 'fill-none');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du like:', error);
+            });
+        });
+    });
+    
+    // Gestion des boutons de retweet
+    document.querySelectorAll('.retweet-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const tweetId = this.dataset.tweetId;
+            const isRetweeted = this.dataset.retweeted === 'true';
+            const retweetIcon = this.querySelector('svg');
+            const retweetCount = this.querySelector('.retweet-count');
+            
+            // Animation immédiate
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Déterminer l'URL selon l'état actuel
+            const url = isRetweeted ? 
+                `/tweets/${tweetId}/unretweet/` : 
+                `/tweets/${tweetId}/retweet/`;
+            
+            // Requête AJAX
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour l'état du bouton
+                    this.dataset.retweeted = data.retweeted.toString();
+                    
+                    // Mettre à jour le compteur
+                    retweetCount.textContent = data.retweet_count;
+                    
+                    // Mettre à jour l'apparence avec animation
+                    if (data.retweeted) {
+                        // Devient vert (retweeté)
+                        retweetIcon.classList.add('text-green-500');
+                        
+                        // Animation de "pop" pour le retweet
+                        retweetIcon.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            retweetIcon.style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        // Redevient gris (non retweeté)
+                        retweetIcon.classList.remove('text-green-500');
+                    }
+                } else {
+                    // Afficher l'erreur si nécessaire
+                    if (data.error) {
+                        console.log(data.error);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du retweet:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

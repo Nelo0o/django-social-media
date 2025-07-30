@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from .models import Tweet, Comment, Hashtag
 from django.core.exceptions import PermissionDenied
 from .models import Tweet, Comment
 from .forms import TweetForm, CommentForm
@@ -162,6 +163,43 @@ def tweet_detail(request, tweet_id):
         'comment_form': comment_form,
     }
     return render(request, 'tweet_detail.html', context)
+
+
+class HashtagTweetsView(ListView):
+    """Vue pour afficher tous les tweets contenant un hashtag spécifique"""
+    model = Tweet
+    template_name = 'hashtag_tweets.html'
+    context_object_name = 'tweets'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        self.hashtag = get_object_or_404(Hashtag, label=self.kwargs['hashtag_label'])
+        
+        # Récupérer tous les tweets contenant ce hashtag
+        queryset = Tweet.objects.filter(
+            hashtags=self.hashtag
+        ).select_related(
+            'author__user', 'retweet_of__author__user'
+        ).prefetch_related(
+            'likes', 'comments', 'retweets', 'hashtags',
+            'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
+        ).order_by('-created_at')
+        
+        # Ajouter les informations pour l'utilisateur connecté
+        if self.request.user.is_authenticated:
+            user_profile = self.request.user.profile
+            for tweet in queryset:
+                original_tweet = tweet.original_tweet
+                tweet.is_liked_by_user = original_tweet.likes.filter(user=user_profile).exists()
+                tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['hashtag'] = self.hashtag
+        context['tweets_count'] = self.get_queryset().count()
+        return context
 
 
 @login_required

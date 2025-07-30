@@ -65,7 +65,7 @@
             {% if tweet.original_tweet.hashtags.exists %}
             <div class="mb-3">
                 {% for hashtag in tweet.original_tweet.hashtags.all %}
-                <span class="text-x-blue mr-2">#{{ hashtag.label }}</span>
+                <a href="{% url 'tweets:hashtag' hashtag_label=hashtag.label %}" class="text-x-blue hover:text-x-purple hover:underline mr-2 transition-colors">#{{ hashtag.label }}</a>
                 {% endfor %}
             </div>
             {% endif %}

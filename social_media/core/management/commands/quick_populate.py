@@ -6,10 +6,103 @@ from follows.models import Follow
 import random
 from django.utils import timezone
 from datetime import timedelta
+import requests
+from django.core.files.base import ContentFile
+from PIL import Image, ImageDraw, ImageFont
+import io
+import os
 
 
 class Command(BaseCommand):
     help = 'Quick populate database with predefined users and tweets'
+    
+    def create_avatar_for_user(self, user_profile):
+        """Crée un avatar pour l'utilisateur en utilisant différentes méthodes"""
+        try:
+            # Méthode 1: Télécharger depuis Robohash (avatars robots colorés)
+            username = user_profile.user.username
+            robohash_url = f"https://robohash.org/{username}.png?size=200x200&set=set1"
+            
+            response = requests.get(robohash_url, timeout=10)
+            if response.status_code == 200:
+                avatar_content = ContentFile(response.content)
+                avatar_filename = f"{username}_avatar.png"
+                user_profile.avatar.save(avatar_filename, avatar_content, save=True)
+                return True
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"Robohash failed for {username}: {e}"))
+        
+        try:
+            # Méthode 2: Créer un avatar avec initiales si Robohash échoue
+            return self.create_initials_avatar(user_profile)
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Avatar creation failed for {username}: {e}"))
+            return False
+    
+    def create_initials_avatar(self, user_profile):
+        """Crée un avatar avec les initiales de l'utilisateur"""
+        # Couleurs de fond variées inspirées du thème violet
+        colors = [
+            '#6366f1',  # indigo
+            '#8b5cf6',  # violet
+            '#a855f7',  # purple
+            '#d946ef',  # fuchsia
+            '#ec4899',  # pink
+            '#f59e0b',  # amber
+            '#10b981',  # emerald
+            '#3b82f6',  # blue
+        ]
+        
+        # Obtenir les initiales
+        first_name = user_profile.user.first_name or user_profile.user.username[0]
+        last_name = user_profile.user.last_name or user_profile.user.username[1:2]
+        initials = (first_name[0] + last_name[0]).upper() if last_name else first_name[0].upper()
+        
+        # Choisir une couleur basée sur le username pour la cohérence
+        color_index = hash(user_profile.user.username) % len(colors)
+        bg_color = colors[color_index]
+        
+        # Créer l'image
+        size = 200
+        image = Image.new('RGB', (size, size), bg_color)
+        draw = ImageDraw.Draw(image)
+        
+        # Essayer d'utiliser une police système, sinon utiliser la police par défaut
+        try:
+            # Taille de police adaptée
+            font_size = int(size * 0.4)
+            font = ImageFont.truetype("arial.ttf", font_size)
+        except:
+            try:
+                font = ImageFont.load_default()
+            except:
+                font = None
+        
+        # Calculer la position du texte pour le centrer
+        if font:
+            bbox = draw.textbbox((0, 0), initials, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+        else:
+            text_width = len(initials) * 20
+            text_height = 30
+        
+        x = (size - text_width) // 2
+        y = (size - text_height) // 2
+        
+        # Dessiner le texte en blanc
+        draw.text((x, y), initials, fill='white', font=font)
+        
+        # Sauvegarder l'image
+        img_io = io.BytesIO()
+        image.save(img_io, format='PNG')
+        img_io.seek(0)
+        
+        avatar_content = ContentFile(img_io.getvalue())
+        avatar_filename = f"{user_profile.user.username}_initials.png"
+        user_profile.avatar.save(avatar_filename, avatar_content, save=True)
+        
+        return True
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -203,8 +296,13 @@ class Command(BaseCommand):
             profile.city = user_data['city']
             profile.save()
             
+            # Créer un avatar pour l'utilisateur
+            if self.create_avatar_for_user(profile):
+                self.stdout.write(f'✅ Created user with avatar: {user_data["username"]}')
+            else:
+                self.stdout.write(f'⚠️  Created user without avatar: {user_data["username"]}')
+            
             created_users.append(profile)
-            self.stdout.write(f'Created user: {user_data["username"]}')
 
         # Créer des relations de suivi logiques
         follow_relationships = [

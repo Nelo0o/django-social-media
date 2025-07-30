@@ -138,5 +138,105 @@
     </div>
     
     {% block extra_js %}{% endblock %}
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function getCSRFToken() {
+            const token = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (token) return token.value;
+            
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) return metaToken.getAttribute('content');
+            
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') return value;
+            }
+            return null;
+        }
+        
+        document.addEventListener('click', function(e) {
+            const menuButton = e.target.closest('.tweet-menu-btn');
+            if (menuButton) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const menu = menuButton.nextElementSibling;
+                
+                if (menu && menu.classList.contains('tweet-menu')) {
+                    document.querySelectorAll('.tweet-menu').forEach(m => {
+                        if (m !== menu) {
+                            m.classList.add('hidden');
+                        }
+                    });
+                    
+                    const isHidden = menu.classList.contains('hidden');
+                    if (isHidden) {
+                        menu.classList.remove('hidden');
+                    } else {
+                        menu.classList.add('hidden');
+                    }
+                }
+                return;
+            }
+            
+            if (e.target.closest('.tweet-menu')) {
+                return;
+            }
+            
+            const openMenus = document.querySelectorAll('.tweet-menu:not(.hidden)');
+            if (openMenus.length > 0) {
+                openMenus.forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-tweet-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const button = e.target.closest('.delete-tweet-btn');
+                const tweetId = button.dataset.tweetId;
+                
+                if (!confirm('Êtes-vous sûr de vouloir supprimer ce tweet ?')) {
+                    return;
+                }
+                
+                fetch(`/tweets/${tweetId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const tweetCard = button.closest('article');
+                        if (tweetCard) {
+                            tweetCard.style.opacity = '0';
+                            tweetCard.style.transform = 'translateX(-20px)';
+                            tweetCard.style.transition = 'all 0.3s ease';
+                            
+                            setTimeout(() => {
+                                tweetCard.remove();
+                            }, 300);
+                        }
+                    } else {
+                        alert(data.message || 'Erreur lors de la suppression du tweet');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors de la suppression du tweet');
+                });
+            }
+        });
+    });
+    </script>
 </body>
 </html>

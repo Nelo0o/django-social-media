@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.core.exceptions import PermissionDenied
 from .models import Tweet, Comment
 from .forms import TweetForm, CommentForm
 
@@ -161,3 +162,35 @@ def tweet_detail(request, tweet_id):
         'comment_form': comment_form,
     }
     return render(request, 'tweet_detail.html', context)
+
+
+@login_required
+@require_POST
+def delete_tweet(request, tweet_id):
+    """Supprimer un tweet (seulement par son auteur)"""
+    tweet = get_object_or_404(Tweet, id=tweet_id)
+    
+    # Vérifier que l'utilisateur est bien l'auteur du tweet
+    if tweet.author != request.user.profile:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Vous ne pouvez supprimer que vos propres tweets'
+            }, status=403)
+        else:
+            messages.error(request, 'Vous ne pouvez supprimer que vos propres tweets')
+            return redirect('core:home')
+    
+    # Supprimer le tweet
+    tweet.delete()
+    
+    # Si c'est une requête AJAX, retourner du JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': 'Tweet supprimé avec succès'
+        })
+    
+    # Sinon rediriger avec un message
+    messages.success(request, 'Tweet supprimé avec succès')
+    return redirect('core:home')

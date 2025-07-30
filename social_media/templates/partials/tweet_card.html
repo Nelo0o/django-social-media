@@ -21,17 +21,41 @@
             </div>
         {% endif %}
         <div class="flex-1">
-            <div class="flex items-center space-x-2 mb-1">
-                <a href="{% url 'public_profile' username=tweet.original_tweet.author.user.username %}" class="font-bold hover:underline text-x-text">
-                    {% if tweet.original_tweet.author.user.first_name or tweet.original_tweet.author.user.last_name %}
-                        {{ tweet.original_tweet.author.user.first_name }} {{ tweet.original_tweet.author.user.last_name }}
-                    {% else %}
-                        {{ tweet.original_tweet.author.user.username }}
-                    {% endif %}
-                </a>
-                <a href="{% url 'public_profile' username=tweet.original_tweet.author.user.username %}" class="text-x-gray hover:underline">@{{ tweet.original_tweet.author.user.username }}</a>
-                <span class="text-x-gray">·</span>
-                <span class="text-x-gray">{{ tweet.original_tweet.created_at|timesince }}</span>
+            <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center space-x-2">
+                    <a href="{% url 'public_profile' username=tweet.original_tweet.author.user.username %}" class="font-bold hover:underline text-x-text">
+                        {% if tweet.original_tweet.author.user.first_name or tweet.original_tweet.author.user.last_name %}
+                            {{ tweet.original_tweet.author.user.first_name }} {{ tweet.original_tweet.author.user.last_name }}
+                        {% else %}
+                            {{ tweet.original_tweet.author.user.username }}
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'public_profile' username=tweet.original_tweet.author.user.username %}" class="text-x-gray hover:underline">@{{ tweet.original_tweet.author.user.username }}</a>
+                    <span class="text-x-gray">·</span>
+                    <span class="text-x-gray">{{ tweet.original_tweet.created_at|timesince }}</span>
+                </div>
+                
+                <!-- Menu trois points (seulement pour l'auteur) -->
+                {% if user.is_authenticated and tweet.original_tweet.author == user.profile %}
+                <div class="relative">
+                    <button class="tweet-menu-btn p-2 text-x-gray hover:text-x-text hover:bg-x-darker rounded-full transition-colors" 
+                            data-tweet-id="{{ tweet.original_tweet.id }}"
+                            title="Options">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Menu déroulant -->
+                    <div class="tweet-menu absolute right-0 top-full mt-1 bg-x-darker border border-x-border rounded-lg shadow-xl py-1 min-w-[120px] hidden" 
+                         style="z-index: 50;">
+                        <button class="delete-tweet-btn w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/10 transition-colors text-sm" 
+                                data-tweet-id="{{ tweet.original_tweet.id }}">
+                            Supprimer
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
             </div>
             <p class="mb-3 text-x-text leading-relaxed">
                 {{ tweet.original_tweet.get_content_without_hashtags|linebreaks }}

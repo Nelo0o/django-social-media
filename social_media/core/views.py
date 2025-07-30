@@ -11,17 +11,25 @@ class HomeView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Accueil'
         
-        # Récupérer tous les tweets par ordre chronologique décroissant
-        context['tweets'] = Tweet.objects.select_related(
-            'author__user'
+        # Récupérer les tweets récents avec les relations optimisées
+        tweets = Tweet.objects.select_related(
+            'author__user', 'retweet_of__author__user'
         ).prefetch_related(
-            'likes__user__user',
-            'comments__author__user'
-        ).all()[:50]  # Limiter à 50 tweets pour la performance
+            'likes', 'comments', 'retweets', 'hashtags',
+            'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
+        ).order_by('-created_at')[:50]
         
-        # Ajouter le formulaire de création de tweet si l'utilisateur est connecté
+        # Ajouter l'état du retweet pour l'utilisateur connecté
+        if self.request.user.is_authenticated:
+            user_profile = self.request.user.profile
+            for tweet in tweets:
+                original_tweet = tweet.original_tweet
+                tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
+        
+        context['tweets'] = tweets
+        
+        # Ajouter le formulaire de tweet pour les utilisateurs connectés
         if self.request.user.is_authenticated:
             context['tweet_form'] = TweetForm()
         

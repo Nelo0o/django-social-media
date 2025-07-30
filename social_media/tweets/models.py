@@ -27,6 +27,29 @@ class Tweet(models.Model):
     def get_content_without_hashtags(self):
         """Retourne le contenu sans les hashtags"""
         return re.sub(r'#\w+', '', self.content).strip()
+    
+    @property
+    def is_retweet(self):
+        """Vérifie si ce tweet est un retweet"""
+        return self.retweet_of is not None
+    
+    @property
+    def original_tweet(self):
+        """Retourne le tweet original (pour les retweets)"""
+        return self.retweet_of if self.is_retweet else self
+    
+    @property
+    def retweet_count(self):
+        """Nombre de retweets de ce tweet"""
+        return self.retweets.count()
+    
+    def get_retweeters(self):
+        """Retourne les profils qui ont retweeté ce tweet"""
+        return [retweet.author for retweet in self.retweets.select_related('author__user')]
+    
+    def is_retweeted_by(self, user_profile):
+        """Vérifie si un utilisateur a retweeté ce tweet"""
+        return self.retweets.filter(author=user_profile).exists()
 
 
 class Comment(models.Model):

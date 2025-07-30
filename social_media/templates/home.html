@@ -20,10 +20,10 @@
                 {% if user.profile.avatar %}
                     <img src="{{ user.profile.avatar.url }}" class="w-12 h-12 rounded-full object-cover" alt="Votre avatar">
                 {% else %}
-                    <div class="w-12 h-12 rounded-full bg-x-darker flex items-center justify-center">
-                        <svg class="w-6 h-6 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
+                    <div class="w-12 h-12 rounded-full bg-x-blue flex items-center justify-center">
+                      <span class="text-white font-bold">
+                          {{ user.username|first|upper }}
+                      </span>
                     </div>
                 {% endif %}
                 <div class="flex-1">
@@ -50,114 +50,7 @@
     <!-- Feed des tweets -->
     <div>
         {% for tweet in tweets %}
-        <article class="border-b border-x-border p-4 hover:bg-x-darker/50 transition-colors">
-            <div class="flex space-x-3">
-                {% if tweet.author.avatar %}
-                    <img src="{{ tweet.author.avatar.url }}" class="w-12 h-12 rounded-full object-cover" alt="{{ tweet.author.user.username }}">
-                {% else %}
-                    <div class="w-12 h-12 rounded-full bg-x-darker flex items-center justify-center">
-                        <svg class="w-6 h-6 text-x-gray" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                    </div>
-                {% endif %}
-                <div class="flex-1">
-                    <div class="flex items-center space-x-2 mb-1">
-                        <a href="{% url 'public_profile' username=tweet.author.user.username %}" class="font-bold hover:underline text-x-text">
-                            {% if tweet.author.user.first_name or tweet.author.user.last_name %}
-                                {{ tweet.author.user.first_name }} {{ tweet.author.user.last_name }}
-                            {% else %}
-                                {{ tweet.author.user.username }}
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'public_profile' username=tweet.author.user.username %}" class="text-x-gray hover:underline">@{{ tweet.author.user.username }}</a>
-                        <span class="text-x-gray">·</span>
-                        <span class="text-x-gray">{{ tweet.created_at|timesince }}</span>
-                    </div>
-                    <p class="mb-3 text-x-text leading-relaxed">
-                        {{ tweet.get_content_without_hashtags|linebreaks }}
-                    </p>
-                    
-                    <!-- Hashtags -->
-                    {% if tweet.hashtags.exists %}
-                    <div class="mb-3">
-                        {% for hashtag in tweet.hashtags.all %}
-                        <span class="text-x-blue mr-2">#{{ hashtag.label }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Image du tweet -->
-                    {% if tweet.image %}
-                    <div class="mb-3 rounded-2xl overflow-hidden border border-x-border">
-                        <img src="{{ tweet.image.url }}" class="w-full max-h-96 object-cover hover:opacity-95 transition-opacity" alt="Image du tweet">
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Actions du tweet -->
-                    <div class="flex justify-between max-w-md mt-3">
-                        <!-- Commentaires -->
-                        <a href="{% url 'tweets:detail' tweet.id %}" class="flex items-center space-x-2 text-x-gray hover:text-x-blue transition-colors group">
-                            <div class="p-2 rounded-full group-hover:bg-x-blue/10 transition-colors">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M14.046 2.242l-4.148-.01h-.002c-4.374 0-7.8 3.427-7.8 7.802 0 4.098 3.186 7.206 7.465 7.37v3.828c0 .108.044.286.12.403.142.225.384.347.632.347.138 0 .277-.038.402-.118.264-.168 6.473-4.14 8.088-5.506 1.902-1.61 3.04-3.97 3.043-6.312v-.017c-.006-4.367-3.43-7.787-7.8-7.788zm3.787 12.972c-1.134.96-4.862 3.405-6.772 4.643V16.67c0-.414-.335-.75-.75-.75h-.396c-3.66 0-6.318-2.476-6.318-5.886 0-3.534 2.768-6.302 6.3-6.302l4.147.01h.002c3.532 0 6.3 2.766 6.302 6.296-.003 1.91-.942 3.844-2.514 5.176z"/>
-                                </svg>
-                            </div>
-                            <span class="text-sm">{{ tweet.comments.count }}</span>
-                        </a>
-                        
-                        <!-- Retweets -->
-                        <button class="flex items-center space-x-2 text-x-gray hover:text-green-500 transition-colors group">
-                            <div class="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M23.77 15.67c-.292-.293-.767-.293-1.06 0l-2.22 2.22V7.65c0-2.068-1.683-3.75-3.75-3.75h-5.85c-.414 0-.75.336-.75.75s.336.75.75.75h5.85c1.24 0 2.25 1.01 2.25 2.25v10.24l-2.22-2.22c-.293-.293-.768-.293-1.061 0s-.293.768 0 1.061l3.5 3.5c.145.147.337.22.53.22s.383-.072.53-.22l3.5-3.5c.294-.292.294-.767.001-1.06z"/>
-                                </svg>
-                            </div>
-                            <span class="text-sm">{{ tweet.retweets.count }}</span>
-                        </button>
-                        
-                        <!-- Likes -->
-                        {% if user.is_authenticated %}
-                        <button class="like-btn flex items-center space-x-2 text-x-gray hover:text-red-500 transition-colors group" 
-                                data-tweet-id="{{ tweet.id }}" 
-                                data-liked="{% if user.profile in tweet.likes.all %}true{% else %}false{% endif %}">
-                            <div class="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
-                                <svg class="w-5 h-5 heart-icon {% if user.profile in tweet.likes.all %}text-red-500 fill-current{% else %}stroke-current fill-none{% endif %}" 
-                                     viewBox="0 0 24 24" stroke-width="2">
-                                    {% if user.profile in tweet.likes.all %}
-                                        <!-- Cœur plein (liked) -->
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>
-                                    {% else %}
-                                        <!-- Cœur vide (not liked) -->
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none"/>
-                                    {% endif %}
-                                </svg>
-                            </div>
-                            <span class="text-sm likes-count">{{ tweet.likes.count }}</span>
-                        </button>
-                        {% else %}
-                        <button class="flex items-center space-x-2 text-x-gray hover:text-red-500 transition-colors group">
-                            <div class="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.225c-2.08 0-3.903 1.988-3.903 4.255 0 5.74 7.034 11.596 8.55 11.658 1.518-.062 8.55-5.917 8.55-11.658 0-2.267-1.822-4.255-3.902-4.255-2.528 0-3.94 2.936-3.952 2.965-.23.562-1.156.562-1.387 0-.014-.03-1.425-2.965-3.954-2.965z"/>
-                                </svg>
-                            </div>
-                            <span class="text-sm">{{ tweet.likes.count }}</span>
-                        </button>
-                        {% endif %}
-                        
-                        <!-- Partager -->
-                        <button class="flex items-center space-x-2 text-x-gray hover:text-x-blue transition-colors group">
-                            <div class="p-2 rounded-full group-hover:bg-x-blue/10 transition-colors">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M17.53 7.47l-5-5c-.293-.293-.768-.293-1.061 0l-5 5c-.294.293-.294.768 0 1.061s.768.293 1.061 0L11 4.061V19c0 .553.447 1 1 1s1-.447 1-1V4.061l3.47 3.47c.293.293.768.293 1.061 0s.293-.768 0-1.061z"/>
-                                </svg>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </article>
+            {% include 'partials/tweet_card.html' %}
         {% empty %}
         <!-- État vide -->
         <div class="text-center py-12">
@@ -237,6 +130,72 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Erreur lors du like:', error);
                 // En cas d'erreur, on peut afficher un message ou restaurer l'état précédent
+            });
+        });
+    });
+    
+    // Gestion des boutons de retweet
+    document.querySelectorAll('.retweet-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const tweetId = this.dataset.tweetId;
+            const isRetweeted = this.dataset.retweeted === 'true';
+            const retweetIcon = this.querySelector('svg');
+            const retweetCount = this.querySelector('.retweet-count');
+            
+            // Animation immédiate
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Déterminer l'URL selon l'état actuel
+            const url = isRetweeted ? 
+                `/tweets/${tweetId}/unretweet/` : 
+                `/tweets/${tweetId}/retweet/`;
+            
+            // Requête AJAX
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour l'état du bouton
+                    this.dataset.retweeted = data.retweeted.toString();
+                    
+                    // Mettre à jour le compteur
+                    retweetCount.textContent = data.retweet_count;
+                    
+                    // Mettre à jour l'apparence avec animation
+                    if (data.retweeted) {
+                        // Devient vert (retweeté)
+                        retweetIcon.classList.add('text-green-500');
+                        
+                        // Animation de "pop" pour le retweet
+                        retweetIcon.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            retweetIcon.style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        // Redevient gris (non retweeté)
+                        retweetIcon.classList.remove('text-green-500');
+                    }
+                } else {
+                    // Afficher l'erreur si nécessaire
+                    if (data.error) {
+                        console.log(data.error);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du retweet:', error);
             });
         });
     });

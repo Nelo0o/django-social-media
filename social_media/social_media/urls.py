@@ -36,8 +36,7 @@ urlpatterns = [
     path('profile/<str:username>/', user_views.AccountView.as_view(), name='public_profile'),
     
     # URLs de follow/unfollow
-    path('follow/<str:username>/', user_views.follow_user, name='follow_user'),
-    path('unfollow/<str:username>/', user_views.unfollow_user, name='unfollow_user'),
+    path('', include('follows.urls')),
     
     # URLs de recherche d'utilisateurs
     path('search/', user_views.UserSearchView.as_view(), name='user_search'),

@@ -45,6 +45,9 @@ urlpatterns = [
     # URLs des tweets
     path('tweets/', include('tweets.urls')),
     
+    # URLs des notifications
+    path('notifications/', include('notifications.urls')),
+    
     # Garder users/ pour d'autres fonctionnalités futures
     path('users/', include('users.urls')),
 ]

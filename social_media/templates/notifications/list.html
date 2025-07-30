@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="flex-1 bg-x-black">
+    <!-- Header -->
+    <div class="border-b border-x-border">
+        <div class="p-4">
+            <h1 class="text-xl font-bold text-x-text">Notifications</h1>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-2xl mx-auto">
+        {% if notifications %}
+            {% for notification in notifications %}
+                <div class="border-b border-x-border">
+                    <div class="p-4 flex items-start space-x-3">
+                        <!-- Avatar -->
+                        <div class="flex-shrink-0">
+                            {% if notification.sender.avatar %}
+                                <img src="{{ notification.sender.avatar.url }}" 
+                                     alt="{{ notification.sender.user.username }}" 
+                                     class="w-10 h-10 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-10 h-10 bg-x-blue rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm font-medium">
+                                        {{ notification.sender.user.username|first|upper }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="flex-1">
+                            <p class="text-x-text">
+                                <span class="font-semibold">{{ notification.sender.user.username }}</span>
+                                {% if notification.notification_type == 'like' %}
+                                    a aimé votre tweet
+                                {% elif notification.notification_type == 'comment' %}
+                                    a commenté votre tweet
+                                {% elif notification.notification_type == 'follow' %}
+                                    vous suit maintenant
+                                {% elif notification.notification_type == 'retweet' %}
+                                    a retweeté votre tweet
+                                {% endif %}
+                            </p>
+                            
+                            <!-- Tweet preview -->
+                            {% if notification.tweet %}
+                                <div class="bg-x-darker/30 rounded p-3 mt-2 text-sm">
+                                    <p class="text-x-light-gray">
+                                        "{{ notification.tweet.content|truncatechars:120 }}"
+                                    </p>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Time -->
+                            <p class="text-x-light-gray text-sm mt-2">
+                                {{ notification.created_at|timesince }} ago
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if notifications.has_other_pages %}
+                <div class="p-6 border-t border-x-border">
+                    <nav class="flex justify-center items-center space-x-4">
+                        {% if notifications.has_previous %}
+                            <a href="?page={{ notifications.previous_page_number }}" 
+                               class="bg-x-darker hover:bg-x-blue text-x-text hover:text-white px-4 py-2 rounded-full transition-colors">
+                                Précédent
+                            </a>
+                        {% endif %}
+                        
+                        <span class="text-x-light-gray">
+                            Page {{ notifications.number }} sur {{ notifications.paginator.num_pages }}
+                        </span>
+                        
+                        {% if notifications.has_next %}
+                            <a href="?page={{ notifications.next_page_number }}" 
+                               class="bg-x-darker hover:bg-x-blue text-x-text hover:text-white px-4 py-2 rounded-full transition-colors">
+                                Suivant
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Empty state -->
+            <div class="text-center py-16">
+                <h3 class="text-xl font-semibold text-x-text mb-2">Aucune notification</h3>
+                <p class="text-x-light-gray">Vous n'avez pas encore de notifications.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}

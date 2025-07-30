@@ -129,12 +129,13 @@ class UserSearchView(TemplateView):
         users = UserProfile.objects.select_related('user').all()
         
         if query:
-            # Recherche par nom d'utilisateur, prénom, nom ou bio
+            # Recherche par nom d'utilisateur, prénom, nom, bio ou ville
             users = users.filter(
                 Q(user__username__icontains=query) |
                 Q(user__first_name__icontains=query) |
                 Q(user__last_name__icontains=query) |
-                Q(bio__icontains=query)
+                Q(bio__icontains=query) |
+                Q(city__icontains=query)
             )
         
         # Exclure l'utilisateur connecté de la recherche

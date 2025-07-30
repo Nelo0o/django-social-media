@@ -178,11 +178,14 @@ class HashtagTweetsView(ListView):
         # Récupérer tous les tweets contenant ce hashtag
         queryset = Tweet.objects.filter(
             hashtags=self.hashtag
+
         ).select_related(
             'author__user', 'retweet_of__author__user'
+        # préchargement des relations ManyToMany et reverse ForeignKey
         ).prefetch_related(
             'likes', 'comments', 'retweets', 'hashtags',
             'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
+        # tri des résultats    
         ).order_by('-created_at')
         
         # Ajouter les informations pour l'utilisateur connecté

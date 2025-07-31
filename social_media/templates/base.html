@@ -47,7 +47,7 @@
             <!-- Logo -->
             <div class="p-4">
                 <a href="{% url 'core:home' %}" class="block">
-                    <img src="{% static 'images/logo-z.png' %}" alt="Z" class="w-12 h-12">
+                    <img src="{% static 'images/logo-z.png' %}" alt="Z" class="w-8 h-8">
                 </a>
             </div>
             
@@ -234,6 +234,112 @@
                 .catch(error => {
                     console.error('Error:', error);
                     alert('Erreur lors de la suppression du tweet');
+                });
+            }
+        });
+        
+        // Gestion des likes
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.like-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const button = e.target.closest('.like-btn');
+                const tweetId = button.dataset.tweetId;
+                const isLiked = button.dataset.liked === 'true';
+                
+                fetch(`/tweets/${tweetId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mettre à jour l'état du bouton
+                        button.dataset.liked = data.liked.toString();
+                        
+                        // Mettre à jour l'icône et la couleur
+                        const heartIcon = button.querySelector('.heart-icon');
+                        const likesCount = button.querySelector('.likes-count');
+                        
+                        if (data.liked) {
+                            button.classList.remove('text-x-gray');
+                            button.classList.add('text-red-500');
+                            heartIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>';
+                        } else {
+                            button.classList.remove('text-red-500');
+                            button.classList.add('text-x-gray');
+                            heartIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none" stroke-width="2"/>';
+                        }
+                        
+                        // Mettre à jour le compteur
+                        if (likesCount) {
+                            likesCount.textContent = data.likes_count;
+                        }
+                    } else {
+                        console.error('Erreur:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+        
+        // Gestion des retweets
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.retweet-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const button = e.target.closest('.retweet-btn');
+                const tweetId = button.dataset.tweetId;
+                const isRetweeted = button.dataset.retweeted === 'true';
+                
+                const url = isRetweeted ? `/tweets/${tweetId}/unretweet/` : `/tweets/${tweetId}/retweet/`;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mettre à jour l'état du bouton
+                        button.dataset.retweeted = data.retweeted.toString();
+                        
+                        // Mettre à jour l'icône et la couleur
+                        const svg = button.querySelector('svg');
+                        const retweetCount = button.querySelector('.retweet-count');
+                        
+                        if (data.retweeted) {
+                            button.classList.remove('text-x-gray');
+                            button.classList.add('text-green-500');
+                            svg.classList.add('text-green-500');
+                        } else {
+                            button.classList.remove('text-green-500');
+                            button.classList.add('text-x-gray');
+                            svg.classList.remove('text-green-500');
+                        }
+                        
+                        // Mettre à jour le compteur
+                        if (retweetCount) {
+                            retweetCount.textContent = data.retweet_count;
+                        }
+                    } else {
+                        console.error('Erreur:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                 });
             }
         });

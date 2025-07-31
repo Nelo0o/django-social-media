@@ -45,12 +45,13 @@ class HomeView(TemplateView):
         
         tweets = tweets[:50]
         
-        # Ajouter l'état du retweet pour l'utilisateur connecté
+        # Ajouter l'état du retweet et des likes pour l'utilisateur connecté
         if self.request.user.is_authenticated:
             user_profile = self.request.user.profile
             for tweet in tweets:
                 original_tweet = tweet.original_tweet
                 tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
+                tweet.is_liked_by_user = original_tweet.likes.filter(user=user_profile).exists()
         
         context['tweets'] = tweets
         

@@ -90,8 +90,8 @@
                 </a>
                 
                 <!-- Retweets -->
-                {% if user.is_authenticated and tweet.original_tweet.author != user.profile %}
-                <button class="retweet-btn flex items-center space-x-2 text-x-gray hover:text-green-500 transition-colors group" 
+                {% if user.is_authenticated %}
+                <button class="retweet-btn flex items-center space-x-2 {% if tweet.is_retweeted_by_user %}text-green-500{% else %}text-x-gray{% endif %} hover:text-green-500 transition-colors group" 
                         data-tweet-id="{{ tweet.original_tweet.id }}" 
                         data-retweeted="{% if tweet.is_retweeted_by_user %}true{% else %}false{% endif %}">
                     <div class="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
@@ -114,18 +114,17 @@
                 
                 <!-- Likes -->
                 {% if user.is_authenticated %}
-                <button class="like-btn flex items-center space-x-2 text-x-gray hover:text-red-500 transition-colors group" 
+                <button class="like-btn flex items-center space-x-2 {% if tweet.is_liked_by_user %}text-red-500{% else %}text-x-gray{% endif %} hover:text-red-500 transition-colors group" 
                         data-tweet-id="{{ tweet.original_tweet.id }}" 
-                        data-liked="{% if user.profile in tweet.original_tweet.likes.all %}true{% else %}false{% endif %}">
+                        data-liked="{% if tweet.is_liked_by_user %}true{% else %}false{% endif %}">
                     <div class="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
-                        <svg class="w-5 h-5 heart-icon {% if user.profile in tweet.original_tweet.likes.all %}text-red-500 fill-current{% else %}stroke-current fill-none{% endif %}" 
-                             viewBox="0 0 24 24" stroke-width="2">
-                            {% if user.profile in tweet.original_tweet.likes.all %}
+                        <svg class="w-5 h-5 heart-icon" viewBox="0 0 24 24">
+                            {% if tweet.is_liked_by_user %}
                                 <!-- Cœur plein (liked) -->
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>
                             {% else %}
                                 <!-- Cœur vide (not liked) -->
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none"/>
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none" stroke-width="2"/>
                             {% endif %}
                         </svg>
                     </div>

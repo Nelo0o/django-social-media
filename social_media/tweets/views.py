@@ -62,12 +62,7 @@ def retweet_tweet(request, tweet_id):
     original_tweet = get_object_or_404(Tweet, id=tweet_id)
     user_profile = request.user.profile
     
-    # Vérifier si l'utilisateur essaie de retweeter son propre tweet
-    if original_tweet.author == user_profile:
-        return JsonResponse({
-            'success': False,
-            'error': 'Vous ne pouvez pas retweeter votre propre tweet'
-        }, status=400)
+    # Permettre de retweeter ses propres tweets
     
     # Vérifier si déjà retweeté
     existing_retweet = Tweet.objects.filter(

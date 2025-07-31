@@ -39,6 +39,7 @@ class AccountView(LoginRequiredMixin, TemplateView):
             # Affichage d'un profil public
             profile_user = get_object_or_404(User, username=username)
             profile = profile_user.profile
+            
             context['profile_user'] = profile_user
             context['profile'] = profile
             context['is_own_profile'] = self.request.user.is_authenticated and profile_user == self.request.user
@@ -138,6 +139,27 @@ class UserSearchView(TemplateView):
         # Exclure l'utilisateur connecté de la recherche
         if self.request.user.is_authenticated:
             users = users.exclude(user=self.request.user)
+            
+            # Exclure les utilisateurs qui ont bloqué l'utilisateur connecté
+            from follows.models import Follow
+            current_user_profile = self.request.user.profile
+            
+            # Obtenir les IDs des utilisateurs qui ont bloqué l'utilisateur connecté
+            blocked_by_users = Follow.objects.filter(
+                follower=current_user_profile,
+                blocked=True
+            ).values_list('followed_id', flat=True)
+            
+            # Obtenir les IDs des utilisateurs que l'utilisateur connecté a bloqués
+            blocking_users = Follow.objects.filter(
+                followed=current_user_profile,
+                blocked=True
+            ).values_list('follower_id', flat=True)
+            
+            # Exclure tous ces utilisateurs de la recherche
+            excluded_users = list(blocked_by_users) + list(blocking_users)
+            if excluded_users:
+                users = users.exclude(id__in=excluded_users)
         
         # Ordonner par nombre de followers puis par nom d'utilisateur
         users = users.annotate(
@@ -172,9 +194,23 @@ def user_suggestions(request):
     # Obtenir les IDs des utilisateurs déjà suivis
     following_ids = current_user_profile.following.values_list('id', flat=True)
     
+    # Obtenir les IDs des utilisateurs bloqués (bidirectionnel)
+    from follows.models import Follow
+    blocked_by_users = Follow.objects.filter(
+        follower=current_user_profile,
+        blocked=True
+    ).values_list('followed_id', flat=True)
+    
+    blocking_users = Follow.objects.filter(
+        followed=current_user_profile,
+        blocked=True
+    ).values_list('follower_id', flat=True)
+    
+    excluded_users = list(following_ids) + list(blocked_by_users) + list(blocking_users)
+    
     # Suggestions basées sur la popularité (nombre de followers)
     suggestions = UserProfile.objects.select_related('user').exclude(
-        Q(user=request.user) | Q(id__in=following_ids)
+        Q(user=request.user) | Q(id__in=excluded_users)
     ).annotate(
         followers_count_db=Count('followers', distinct=True)
     ).order_by('-followers_count_db')[:5]
@@ -205,11 +241,11 @@ def delete_account(request):
         # Déconnecter l'utilisateur
         logout(request)
         
-        # Supprimer l'utilisateur (cascade supprimera automatiquement le profil)
+        # Supprimer l'utilisateur
         user.delete()
         
         messages.success(request, f'Le compte {username} a été supprimé avec succès.')
-        return redirect('home')
+        return redirect('core:home')
     
     return redirect('profile')
 

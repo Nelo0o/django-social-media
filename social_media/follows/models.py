@@ -73,6 +73,7 @@ class FollowManager:
             defaults={'blocked': False}
         )
         
+        # Si la relation existe et est bloquée, la débloquer
         if not created and follow_relation.blocked:
             follow_relation.blocked = False
             follow_relation.save()

@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Gérer les followers - Z{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <!-- Main Content Area -->
 <div class="flex-1 max-w-2xl border-x border-x-border">
     <!-- Header -->

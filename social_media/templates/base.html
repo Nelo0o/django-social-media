@@ -140,21 +140,22 @@
     {% block extra_js %}{% endblock %}
     
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        function getCSRFToken() {
-            const token = document.querySelector('[name=csrfmiddlewaretoken]');
-            if (token) return token.value;
-            
-            const metaToken = document.querySelector('meta[name="csrf-token"]');
-            if (metaToken) return metaToken.getAttribute('content');
-            
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                const [name, value] = cookie.trim().split('=');
-                if (name === 'csrftoken') return value;
-            }
-            return null;
+    function getCSRFToken() {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (token) return token.value;
+        
+        const metaToken = document.querySelector('meta[name="csrf-token"]');
+        if (metaToken) return metaToken.getAttribute('content');
+        
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') return value;
         }
+        return null;
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
         
         document.addEventListener('click', function(e) {
             const menuButton = e.target.closest('.tweet-menu-btn');

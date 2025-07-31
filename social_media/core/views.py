@@ -18,7 +18,32 @@ class HomeView(TemplateView):
         ).prefetch_related(
             'likes', 'comments', 'retweets', 'hashtags',
             'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
-        ).order_by('-created_at')[:50]
+        ).order_by('-created_at')
+        
+        # Filtrer les tweets des utilisateurs bloqués si l'utilisateur est connecté
+        if self.request.user.is_authenticated:
+            from follows.models import Follow
+            current_user_profile = self.request.user.profile
+            
+            # Exclure les tweets des utilisateurs qui ont bloqué l'utilisateur connecté
+            blocked_by_users = Follow.objects.filter(
+                follower=current_user_profile,
+                blocked=True
+            ).values_list('followed_id', flat=True)
+            
+            # Exclure les tweets des utilisateurs que l'utilisateur connecté a bloqués
+            blocking_users = Follow.objects.filter(
+                followed=current_user_profile,
+                blocked=True
+            ).values_list('follower_id', flat=True)
+            
+            # Combiner les deux listes d'exclusion
+            excluded_users = list(blocked_by_users) + list(blocking_users)
+            
+            if excluded_users:
+                tweets = tweets.exclude(author_id__in=excluded_users)
+        
+        tweets = tweets[:50]
         
         # Ajouter l'état du retweet pour l'utilisateur connecté
         if self.request.user.is_authenticated:

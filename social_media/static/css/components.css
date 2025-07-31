@@ -1,0 +1,195 @@
+/**
+ * Composants CSS réutilisables pour éviter la répétition de classes Tailwind
+ */
+
+/* Boutons principaux */
+.btn-primary {
+    @apply bg-x-blue hover:bg-x-blue-hover text-white font-bold py-2 px-6 rounded-full transition-colors;
+}
+
+.btn-secondary {
+    @apply bg-x-gray hover:bg-x-darker text-white font-medium py-2 px-4 rounded-full transition-colors;
+}
+
+.btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full transition-colors;
+}
+
+.btn-outline {
+    @apply border border-x-border hover:bg-x-darker text-x-text font-medium py-2 px-4 rounded-full transition-colors;
+}
+
+/* Cards et conteneurs */
+.card {
+    @apply bg-x-darker/30 rounded-xl p-6 border border-x-border;
+}
+
+.card-hover {
+    @apply hover:bg-x-darker/50 transition-colors;
+}
+
+/* Navigation et sidebar */
+.nav-item {
+    @apply flex items-center space-x-3 p-3 rounded-full hover:bg-x-darker transition-colors text-x-text;
+}
+
+.nav-item-active {
+    @apply bg-x-blue/10 text-x-blue;
+}
+
+/* Formulaires */
+.form-input {
+    @apply w-full p-3 bg-x-darker border border-x-border rounded-lg text-x-text placeholder-x-gray focus:border-x-blue focus:outline-none resize-none;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-x-text mb-2;
+}
+
+/* Statistiques */
+.stat-card {
+    @apply text-center p-4 bg-x-darker/50 rounded-lg border border-x-border/50;
+}
+
+.stat-number {
+    @apply text-2xl font-bold mb-1;
+}
+
+.stat-label {
+    @apply text-sm text-x-gray;
+}
+
+/* Actions de tweets */
+.tweet-action {
+    @apply flex items-center space-x-2 text-x-gray transition-colors group;
+}
+
+.tweet-action-icon {
+    @apply p-2 rounded-full transition-colors;
+}
+
+.tweet-action:hover .tweet-action-icon {
+    @apply bg-opacity-10;
+}
+
+/* Couleurs spécifiques pour les actions */
+.tweet-action-comment:hover {
+    @apply text-x-blue;
+}
+
+.tweet-action-comment:hover .tweet-action-icon {
+    @apply bg-x-blue;
+}
+
+.tweet-action-retweet:hover {
+    @apply text-green-500;
+}
+
+.tweet-action-retweet:hover .tweet-action-icon {
+    @apply bg-green-500;
+}
+
+.tweet-action-like:hover {
+    @apply text-red-500;
+}
+
+.tweet-action-like:hover .tweet-action-icon {
+    @apply bg-red-500;
+}
+
+/* États actifs */
+.tweet-action-retweet.active {
+    @apply text-green-500;
+}
+
+.tweet-action-like.active {
+    @apply text-red-500;
+}
+
+/* Avatars */
+.avatar {
+    @apply rounded-full object-cover;
+}
+
+.avatar-sm {
+    @apply w-8 h-8;
+}
+
+.avatar-md {
+    @apply w-12 h-12;
+}
+
+.avatar-lg {
+    @apply w-20 h-20;
+}
+
+.avatar-placeholder {
+    @apply rounded-full bg-x-blue flex items-center justify-center text-white font-bold;
+}
+
+/* Badges et indicateurs */
+.badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+    @apply bg-x-blue/10 text-x-blue;
+}
+
+.badge-success {
+    @apply bg-green-500/10 text-green-500;
+}
+
+.badge-warning {
+    @apply bg-yellow-500/10 text-yellow-500;
+}
+
+.badge-danger {
+    @apply bg-red-500/10 text-red-500;
+}
+
+/* Animations */
+.animate-pulse-soft {
+    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-soft {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.animate-bounce-soft {
+    animation: bounce-soft 1s ease-in-out;
+}
+
+@keyframes bounce-soft {
+    0%, 20%, 53%, 80%, 100% {
+        transform: scale(1);
+    }
+    40%, 43% {
+        transform: scale(1.1);
+    }
+}
+
+/* États de chargement */
+.loading {
+    @apply opacity-50 pointer-events-none;
+}
+
+.skeleton {
+    @apply bg-x-darker/50 animate-pulse-soft rounded;
+}
+
+/* Responsive utilities */
+.container-responsive {
+    @apply max-w-2xl mx-auto;
+}
+
+/* Focus states pour l'accessibilité */
+.focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-x-blue focus:ring-offset-2 focus:ring-offset-x-black;
+}

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load social_tags %}
 
 {% block title %}{% if is_own_profile %}Mon Compte{% else %}{{ profile_user.username }}{% endif %} - Z{% endblock %}
 
@@ -23,15 +24,7 @@
             <div class="flex items-start space-x-4">
                 <!-- Avatar -->
                 <div class="flex-shrink-0">
-                    {% if profile.avatar %}
-                        <img src="{{ profile.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border-2 border-x-border">
-                    {% else %}
-                        <div class="w-12 h-12 rounded-full bg-x-blue flex items-center justify-center">
-                            <span class="text-white font-bold">
-                                {{ profile.user.username|first|upper }}
-                            </span>
-                        </div>
-                    {% endif %}
+                    {% user_avatar profile size='large' border=True %}
                 </div>
                 
                 <!-- User Info -->
@@ -39,35 +32,13 @@
                     <div class="flex items-center justify-between mb-3">
                         <div>
                             <h2 class="text-2xl font-bold text-x-text mb-1">
-                                {% if profile_user.first_name or profile_user.last_name %}
-                                    {{ profile_user.first_name }} {{ profile_user.last_name }}
-                                {% else %}
-                                    {{ profile_user.username }}
-                                {% endif %}
+                                {{ profile_user|user_display_name }}
                             </h2>
                             <p class="text-x-gray">@{{ profile_user.username }}</p>
                         </div>
                         
-                        <!-- Bouton Follow/Unfollow pour les profils publics -->
-                        {% if not is_own_profile and user.is_authenticated %}
-                            <div id="follow-button-container">
-                                {% if is_following %}
-                                    <button id="follow-btn" 
-                                            class="bg-x-gray text-white px-6 py-2 rounded-full font-medium hover:bg-x-dark-gray transition-colors"
-                                            data-username="{{ profile_user.username }}"
-                                            data-following="true">
-                                        Ne plus suivre
-                                    </button>
-                                {% else %}
-                                    <button id="follow-btn" 
-                                            class="bg-x-blue text-white px-6 py-2 rounded-full font-medium hover:bg-x-blue-hover transition-colors"
-                                            data-username="{{ profile_user.username }}"
-                                            data-following="false">
-                                        Suivre
-                                    </button>
-                                {% endif %}
-                            </div>
-                        {% endif %}
+                        <!-- Bouton Follow/Unfollow -->
+                        {% follow_button profile_user is_following %}
                     </div>
                     
                     <!-- Bio -->
@@ -229,117 +200,7 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const followBtn = document.getElementById('follow-btn');
-    
-    if (followBtn) {
-        followBtn.addEventListener('click', function() {
-            const username = this.dataset.username;
-            const isFollowing = this.dataset.following === 'true';
-            const url = isFollowing ? `/unfollow/${username}/` : `/follow/${username}/`;
-            
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mettre à jour le bouton
-                    if (data.is_following) {
-                        this.textContent = 'Ne plus suivre';
-                        this.className = 'bg-x-gray text-white px-6 py-2 rounded-full font-medium hover:bg-x-dark-gray transition-colors';
-                        this.dataset.following = 'true';
-                    } else {
-                        this.textContent = 'Suivre';
-                        this.className = 'bg-x-blue text-white px-6 py-2 rounded-full font-medium hover:bg-x-blue-hover transition-colors';
-                        this.dataset.following = 'false';
-                    }
-                    
-                    // Mettre à jour le compteur d'abonnés
-                    document.getElementById('followers-count').textContent = data.followers_count;
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-            });
-        });
-    }
-    
-    // Gestion des boutons de like
-    document.querySelectorAll('.like-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const tweetId = this.dataset.tweetId;
-            const isLiked = this.dataset.liked === 'true';
-            const heartIcon = this.querySelector('.heart-icon');
-            const likesCount = this.querySelector('.likes-count');
-            
-            // Animation immédiate pour un feedback rapide
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 150);
-            
-            // Requête AJAX
-            fetch(`/tweets/${tweetId}/like/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mettre à jour l'état du bouton
-                    this.dataset.liked = data.liked.toString();
-                    
-                    // Mettre à jour le compteur
-                    likesCount.textContent = data.likes_count;
-                    
-                    // Mettre à jour l'apparence du cœur avec animation
-                    if (data.liked) {
-                        // Cœur devient rouge (liked)
-                        heartIcon.classList.remove('stroke-current', 'fill-none');
-                        heartIcon.classList.add('text-red-500', 'fill-current');
-                        heartIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"/>';
-                        
-                        // Animation de "pop" pour le like
-                        heartIcon.style.transform = 'scale(1.3)';
-                        setTimeout(() => {
-                            heartIcon.style.transform = 'scale(1)';
-                        }, 200);
-                    } else {
-                        // Cœur redevient vide (unliked)
-                        heartIcon.classList.remove('text-red-500', 'fill-current');
-                        heartIcon.classList.add('stroke-current', 'fill-none');
-                        heartIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" fill="none"/>';
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Erreur lors du like:', error);
-                // En cas d'erreur, on peut afficher un message ou restaurer l'état précédent
-            });
-        });
-    });
-});
-
-function confirmDeleteAccount() {
-    const confirmation = confirm("Êtes-vous sûr(e) de vouloir supprimer votre compte ?");
-    
-    if (confirmation) {
-        document.getElementById('delete-form').submit();
-    }
-}
-</script>
+<!-- Toutes les interactions JavaScript sont maintenant centralisées dans interactions.js -->
 
 {% csrf_token %}
 {% endblock %}

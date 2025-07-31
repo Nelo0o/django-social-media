@@ -1,6 +1,6 @@
 from django.db import models
 import re
-
+from .managers import TweetManager
 
 class Tweet(models.Model):
     author = models.ForeignKey('users.UserProfile', on_delete=models.CASCADE, related_name='tweets')
@@ -9,6 +9,8 @@ class Tweet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     retweet_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='retweets')
     hashtags = models.ManyToManyField('Hashtag', blank=True, related_name='tweets')
+    
+    objects = TweetManager()
     
     class Meta:
         ordering = ['-created_at']

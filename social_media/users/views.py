@@ -12,9 +12,9 @@ from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from .forms import InscriptionForm, UserProfileForm
 from .models import UserProfile
+from .services import UserService
 from tweets.models import Tweet
 
-# Inscription utilisateur
 class RegisterView(FormView):
     template_name = "register.html"
     form_class = InscriptionForm
@@ -26,7 +26,6 @@ class RegisterView(FormView):
         messages.success(self.request, f'Bienvenue {user.username}!')
         return super().form_valid(form)
 
-# Afficher le profil utilisateur connecté ou un autre utilisateur
 class AccountView(LoginRequiredMixin, TemplateView):
     template_name = 'account.html'
     
@@ -34,46 +33,16 @@ class AccountView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         username = kwargs.get('username')
         
-        # Afficher son profil OU celui d'un autre utilisateur
-        if username:
-            # Affichage d'un profil public
-            profile_user = get_object_or_404(User, username=username)
-            profile = profile_user.profile
-            
-            context['profile_user'] = profile_user
-            context['profile'] = profile
-            context['is_own_profile'] = self.request.user.is_authenticated and profile_user == self.request.user
-            
-            # Vérifier si l'utilisateur connecté suit ce profil
-            if self.request.user.is_authenticated and not context['is_own_profile']:
-                context['is_following'] = self.request.user.profile.is_following(profile)
-            else:
-                context['is_following'] = False
-        else:
-            # Affichage du profil de l'utilisateur connecté
-            # LoginRequiredMixin s'assure que l'utilisateur est connecté
-            context['profile_user'] = self.request.user
-            context['profile'] = self.request.user.profile
-            context['is_own_profile'] = True
-            context['is_following'] = False
+        profile_data = UserService.get_user_profile_data(
+            username=username,
+            current_user=self.request.user
+        )
+        context.update(profile_data)
         
-        # Récupérer TOUS les tweets de l'utilisateur (originaux + retweets)
-        user_tweets = Tweet.objects.filter(
-            author=context['profile']
-        ).select_related(
-            'author__user', 'retweet_of__author__user'
-        ).prefetch_related(
-            'likes', 'comments', 'retweets', 'hashtags',
-            'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
-        ).order_by('-created_at')
-        
-        # Ajouter les informations pour l'utilisateur connecté
-        if self.request.user.is_authenticated:
-            user_profile = self.request.user.profile
-            for tweet in user_tweets:
-                original_tweet = tweet.original_tweet
-                tweet.is_liked_by_user = original_tweet.likes.filter(user=user_profile).exists()
-                tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
+        user_tweets = UserService.get_user_tweets_with_metadata(
+            profile=context['profile'],
+            current_user=self.request.user
+        )
         
         context['user_tweets'] = user_tweets
         context['tweets_count'] = user_tweets.count()
@@ -124,47 +93,12 @@ class UserSearchView(TemplateView):
         query = self.request.GET.get('q', '').strip()
         page = self.request.GET.get('page', 1)
         
-        users = UserProfile.objects.select_related('user').all()
-        
-        if query:
-            # Recherche par nom d'utilisateur, prénom, nom, bio ou ville
-            users = users.filter(
-                Q(user__username__icontains=query) |
-                Q(user__first_name__icontains=query) |
-                Q(user__last_name__icontains=query) |
-                Q(bio__icontains=query) |
-                Q(city__icontains=query)
-            )
-        
-        # Exclure l'utilisateur connecté de la recherche
-        if self.request.user.is_authenticated:
-            users = users.exclude(user=self.request.user)
-            
-            # Exclure les utilisateurs qui ont bloqué l'utilisateur connecté
-            from follows.models import Follow
-            current_user_profile = self.request.user.profile
-            
-            # Obtenir les IDs des utilisateurs qui ont bloqué l'utilisateur connecté
-            blocked_by_users = Follow.objects.filter(
-                follower=current_user_profile,
-                blocked=True
-            ).values_list('followed_id', flat=True)
-            
-            # Obtenir les IDs des utilisateurs que l'utilisateur connecté a bloqués
-            blocking_users = Follow.objects.filter(
-                followed=current_user_profile,
-                blocked=True
-            ).values_list('follower_id', flat=True)
-            
-            # Exclure tous ces utilisateurs de la recherche
-            excluded_users = list(blocked_by_users) + list(blocking_users)
-            if excluded_users:
-                users = users.exclude(id__in=excluded_users)
-        
-        # Ordonner par nombre de followers puis par nom d'utilisateur
-        users = users.annotate(
-            followers_count_db=Count('followers', distinct=True)
-        ).order_by('-followers_count_db', 'user__username')
+        # Utiliser le service pour la recherche
+        users = UserService.search_users(
+            query=query,
+            current_user=self.request.user,
+            limit=100  # Limite plus élevée pour la pagination
+        )
         
         # Pagination
         paginator = Paginator(users, 12)  # 12 utilisateurs par page
@@ -188,32 +122,11 @@ class UserSearchView(TemplateView):
 @login_required
 def user_suggestions(request):
     """API pour obtenir des suggestions d'utilisateurs à suivre"""
-    # Utilisateurs populaires que l'utilisateur ne suit pas encore
-    current_user_profile = request.user.profile
-    
-    # Obtenir les IDs des utilisateurs déjà suivis
-    following_ids = current_user_profile.following.values_list('id', flat=True)
-    
-    # Obtenir les IDs des utilisateurs bloqués (bidirectionnel)
-    from follows.models import Follow
-    blocked_by_users = Follow.objects.filter(
-        follower=current_user_profile,
-        blocked=True
-    ).values_list('followed_id', flat=True)
-    
-    blocking_users = Follow.objects.filter(
-        followed=current_user_profile,
-        blocked=True
-    ).values_list('follower_id', flat=True)
-    
-    excluded_users = list(following_ids) + list(blocked_by_users) + list(blocking_users)
-    
-    # Suggestions basées sur la popularité (nombre de followers)
-    suggestions = UserProfile.objects.select_related('user').exclude(
-        Q(user=request.user) | Q(id__in=excluded_users)
-    ).annotate(
-        followers_count_db=Count('followers', distinct=True)
-    ).order_by('-followers_count_db')[:5]
+    # Utiliser le service pour obtenir les suggestions
+    suggestions = UserService.get_user_suggestions(
+        current_user=request.user,
+        limit=5
+    )
     
     suggestions_data = []
     for profile in suggestions:

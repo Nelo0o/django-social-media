@@ -1,0 +1,22 @@
+<!-- Statistiques utilisateur réutilisables -->
+<div class="bg-x-darker/30 rounded-xl p-6 border border-x-border">
+    <h3 class="text-lg font-semibold text-x-text mb-4">Statistiques</h3>
+    <div class="grid grid-cols-2 gap-4">
+        <div class="text-center p-4 bg-x-darker/50 rounded-lg border border-x-border/50">
+            <div class="text-2xl font-bold text-x-blue mb-1">{{ stats.tweets_count|default:0 }}</div>
+            <div class="text-sm text-x-gray">Tweet{{ stats.tweets_count|pluralize }}</div>
+        </div>
+        <div class="text-center p-4 bg-x-darker/50 rounded-lg border border-x-border/50">
+            <div class="text-2xl font-bold text-x-purple mb-1">{{ stats.likes_count|default:0 }}</div>
+            <div class="text-sm text-x-gray">J'aime</div>
+        </div>
+        <div class="text-center p-4 bg-x-darker/50 rounded-lg border border-x-border/50">
+            <div class="text-2xl font-bold text-green-500 mb-1">{{ stats.following_count|default:0 }}</div>
+            <div class="text-sm text-x-gray">Abonnement{{ stats.following_count|pluralize }}</div>
+        </div>
+        <div class="text-center p-4 bg-x-darker/50 rounded-lg border border-x-border/50">
+            <div class="text-2xl font-bold text-yellow-500 mb-1">{{ stats.followers_count|default:0 }}</div>
+            <div class="text-sm text-x-gray">Abonné{{ stats.followers_count|pluralize }}</div>
+        </div>
+    </div>
+</div>

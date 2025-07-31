@@ -1,0 +1,21 @@
+<!-- Partial réutilisable pour le bouton follow/unfollow -->
+{% if not is_own_profile and user.is_authenticated %}
+<div id="follow-button-container">
+    {% if is_following %}
+        <button id="follow-btn" 
+                class="bg-x-gray text-white px-6 py-2 rounded-full font-medium hover:bg-red-600 hover:text-white transition-colors group"
+                data-username="{{ target_username }}"
+                data-following="true">
+            <span class="group-hover:hidden">Suivi</span>
+            <span class="hidden group-hover:inline">Ne plus suivre</span>
+        </button>
+    {% else %}
+        <button id="follow-btn" 
+                class="bg-x-blue text-white px-6 py-2 rounded-full font-medium hover:bg-x-blue-hover transition-colors"
+                data-username="{{ target_username }}"
+                data-following="false">
+            Suivre
+        </button>
+    {% endif %}
+</div>
+{% endif %}

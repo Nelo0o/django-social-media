@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
+from .managers import UserProfileManager
 
 
 class UserProfile(models.Model):
@@ -11,6 +12,9 @@ class UserProfile(models.Model):
     bio = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+    
+    # Manager personnalisé
+    objects = UserProfileManager()
 
 
     class Meta:

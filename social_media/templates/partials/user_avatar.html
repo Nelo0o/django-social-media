@@ -1,0 +1,12 @@
+<!-- Partial réutilisable pour l'avatar utilisateur -->
+{% if user_profile.avatar %}
+    <img src="{{ user_profile.avatar.url }}" 
+         class="{% if size == 'large' %}w-20 h-20{% elif size == 'medium' %}w-12 h-12{% else %}w-8 h-8{% endif %} rounded-full object-cover {% if border %}border-2 border-x-border{% endif %}" 
+         alt="Avatar de {{ user_profile.user.username }}">
+{% else %}
+    <div class="{% if size == 'large' %}w-20 h-20{% elif size == 'medium' %}w-12 h-12{% else %}w-8 h-8{% endif %} rounded-full bg-x-blue flex items-center justify-center {% if border %}border-2 border-x-border{% endif %}">
+        <span class="text-white font-bold {% if size == 'large' %}text-xl{% elif size == 'medium' %}text-base{% else %}text-sm{% endif %}">
+            {{ user_profile.user.username|first|upper }}
+        </span>
+    </div>
+{% endif %}

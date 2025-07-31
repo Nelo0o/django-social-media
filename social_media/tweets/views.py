@@ -6,10 +6,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Tweet, Comment, Hashtag
 from django.core.exceptions import PermissionDenied
-from .models import Tweet, Comment
+from .models import Tweet, Comment, Hashtag
 from .forms import TweetForm, CommentForm
+from .services import TweetService
 
 
 class TweetCreateView(LoginRequiredMixin, CreateView):
@@ -28,29 +28,27 @@ class TweetCreateView(LoginRequiredMixin, CreateView):
 @require_POST
 def like_tweet(request, tweet_id):
     tweet = get_object_or_404(Tweet, id=tweet_id)
+    original_tweet = tweet.original_tweet
     user_profile = request.user.profile
     
-    existing_like = tweet.likes.filter(user=user_profile).first()
+    existing_like = original_tweet.likes.filter(user=user_profile).first()
     
     if existing_like:
         existing_like.delete()
-        liked = False
-        message = 'Tweet retiré des favoris'
+        liked, message = False, 'Tweet retiré des favoris'
     else:
-        tweet.likes.create(user=user_profile)
-        liked = True
-        message = 'Tweet ajouté aux favoris'
+        original_tweet.likes.create(user=user_profile)
+        liked, message = True, 'Tweet ajouté aux favoris'
     
-    # Si c'est une requête AJAX, retourner du JSON
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             'success': True,
             'liked': liked,
-            'likes_count': tweet.likes.count(),
+            'likes_count': original_tweet.likes.count(),
+            'original_tweet_id': original_tweet.id,
             'message': message
         })
     
-    # Sinon, redirection classique pour compatibilité
     messages.success(request, message)
     return redirect(request.META.get('HTTP_REFERER', 'core:home'))
 
@@ -58,92 +56,47 @@ def like_tweet(request, tweet_id):
 @login_required
 @require_POST
 def retweet_tweet(request, tweet_id):
-    """Vue pour retweeter un tweet"""
-    original_tweet = get_object_or_404(Tweet, id=tweet_id)
+    tweet = get_object_or_404(Tweet, id=tweet_id)
+    original_tweet = tweet.original_tweet
     user_profile = request.user.profile
     
-    # Vérifier si l'utilisateur essaie de retweeter son propre tweet
-    if original_tweet.author == user_profile:
-        return JsonResponse({
-            'success': False,
-            'error': 'Vous ne pouvez pas retweeter votre propre tweet'
-        }, status=400)
-    
-    # Vérifier si déjà retweeté
     existing_retweet = Tweet.objects.filter(
         author=user_profile,
         retweet_of=original_tweet
     ).first()
     
     if existing_retweet:
-        return JsonResponse({
-            'success': False,
-            'retweeted': True,
-            'retweet_count': original_tweet.retweet_count,
-            'message': 'Vous avez déjà retweeté ce tweet'
-        })
-    
-    # Créer le retweet
-    retweet = Tweet.objects.create(
-        author=user_profile,
-        content='',  # Les retweets n'ont pas de contenu propre
-        retweet_of=original_tweet
-    )
-    
-    return JsonResponse({
-        'success': True,
-        'retweeted': True,
-        'retweet_count': original_tweet.retweet_count,
-        'message': 'Tweet retweeté avec succès'
-    })
-
-
-@login_required
-@require_POST
-def unretweet_tweet(request, tweet_id):
-    """Vue pour annuler un retweet"""
-    original_tweet = get_object_or_404(Tweet, id=tweet_id)
-    user_profile = request.user.profile
-    
-    # Trouver et supprimer le retweet
-    retweet = Tweet.objects.filter(
-        author=user_profile,
-        retweet_of=original_tweet
-    ).first()
-    
-    if retweet:
-        retweet.delete()
-        retweeted = False
-        message = 'Retweet annulé'
+        existing_retweet.delete()
+        retweeted, message = False, 'Retweet annulé'
     else:
-        retweeted = False
-        message = 'Vous n\'aviez pas retweeté ce tweet'
+        Tweet.objects.create(
+            author=user_profile,
+            content='',
+            retweet_of=original_tweet
+        )
+        retweeted, message = True, 'Tweet retweeté avec succès'
     
     return JsonResponse({
         'success': True,
         'retweeted': retweeted,
-        'retweet_count': original_tweet.retweet_count,
+        'retweets_count': original_tweet.retweet_count,
+        'original_tweet_id': original_tweet.id,
         'message': message
     })
 
 
 def tweet_detail(request, tweet_id):
     """Affiche un tweet avec ses commentaires"""
-    tweet = get_object_or_404(Tweet.objects.select_related(
-        'author__user', 'retweet_of__author__user'
-    ).prefetch_related(
-        'likes', 'comments', 'retweets', 'hashtags',
-        'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
-    ), id=tweet_id)
+    # Utiliser le service pour récupérer le tweet et ses commentaires
+    tweet, comments = TweetService.get_tweet_with_comments(
+        tweet_id=tweet_id,
+        current_user=request.user
+    )
     
-    comments = tweet.comments.select_related('author__user').order_by('created_at')
-    
-    # Ajouter les informations pour l'utilisateur connecté
-    if request.user.is_authenticated:
-        user_profile = request.user.profile
-        original_tweet = tweet.original_tweet
-        tweet.is_liked_by_user = original_tweet.likes.filter(user=user_profile).exists()
-        tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
+    if not tweet:
+        # Tweet non trouvé
+        from django.http import Http404
+        raise Http404("Tweet non trouvé")
     
     if request.method == 'POST' and request.user.is_authenticated:
         comment_form = CommentForm(request.POST)
@@ -175,28 +128,17 @@ class HashtagTweetsView(ListView):
     def get_queryset(self):
         self.hashtag = get_object_or_404(Hashtag, label=self.kwargs['hashtag_label'])
         
-        # Récupérer tous les tweets contenant ce hashtag
-        queryset = Tweet.objects.filter(
-            hashtags=self.hashtag
-
-        ).select_related(
-            'author__user', 'retweet_of__author__user'
-        # préchargement des relations ManyToMany et reverse ForeignKey
-        ).prefetch_related(
-            'likes', 'comments', 'retweets', 'hashtags',
-            'retweet_of__likes', 'retweet_of__comments', 'retweet_of__retweets'
-        # tri des résultats    
-        ).order_by('-created_at')
+        # Utiliser le service pour récupérer les tweets du hashtag
+        tweets = TweetService.get_tweets_by_hashtag(
+            hashtag_label=self.hashtag.label,
+            current_user=self.request.user,
+            limit=1000  # Limite élevée pour la pagination
+        )
         
-        # Ajouter les informations pour l'utilisateur connecté
-        if self.request.user.is_authenticated:
-            user_profile = self.request.user.profile
-            for tweet in queryset:
-                original_tweet = tweet.original_tweet
-                tweet.is_liked_by_user = original_tweet.likes.filter(user=user_profile).exists()
-                tweet.is_retweeted_by_user = original_tweet.is_retweeted_by(user_profile)
+        # Ajouter les métadonnées d'interaction
+        TweetService.add_user_interaction_metadata(tweets, self.request.user)
         
-        return queryset
+        return tweets
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

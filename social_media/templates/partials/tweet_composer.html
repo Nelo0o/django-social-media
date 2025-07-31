@@ -1,0 +1,27 @@
+<!-- Composer de tweet réutilisable -->
+{% if user.is_authenticated %}
+<div class="border-b border-x-border p-4 bg-x-purple/5">
+    <form method="post" action="{% url 'tweets:create' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="flex space-x-3">
+            {% include 'partials/user_avatar.html' with user_profile=user.profile size='medium' %}
+            <div class="flex-1">
+                {{ tweet_form.content }}
+                <div class="flex justify-between items-center mt-3">
+                    <div class="flex space-x-4">
+                        <label for="{{ tweet_form.image.id_for_label }}" class="p-2 rounded-full hover:bg-x-purple/10 hover:text-x-purple transition-colors cursor-pointer">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/>
+                            </svg>
+                        </label>
+                        {{ tweet_form.image }}
+                    </div>
+                    <button type="submit" class="bg-x-blue hover:bg-x-blue-hover text-white font-bold py-2 px-6 rounded-full transition-colors">
+                        Poster
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endif %}

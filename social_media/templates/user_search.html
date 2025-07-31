@@ -155,33 +155,22 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
                 <h3 class="text-lg font-medium text-x-text mb-2">Aucun utilisateur trouvé</h3>
-                <p class="text-x-gray">Essayez avec d'autres mots-clés</p>
+                <p class="text-x-gray">Essayez avec d'autres mots-clés ou vérifiez l'orthographe.</p>
             </div>
         {% else %}
             <!-- Welcome Message -->
             <div class="text-center py-12">
-                <svg class="mx-auto w-16 h-16 text-x-gray mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                <svg class="mx-auto w-16 h-16 text-x-blue mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <h3 class="text-lg font-medium text-x-text mb-2">Découvrez de nouveaux utilisateurs</h3>
-                <p class="text-x-gray">Utilisez la barre de recherche pour trouver des personnes à suivre</p>
+                <h3 class="text-lg font-medium text-x-text mb-2">Rechercher des utilisateurs</h3>
+                <p class="text-x-gray mb-4">Utilisez la barre de recherche ci-dessus pour trouver des utilisateurs par nom d'utilisateur, nom, bio ou ville.</p>
             </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Right Sidebar -->
-<div class="w-80 p-4">
-    <div class="bg-x-darker/30 rounded-xl p-4 border border-x-border">
-        <h3 class="text-lg font-bold text-x-text mb-3">Suggestions</h3>
-        <div id="suggestions-container">
-            <div class="text-center py-4">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-x-blue mx-auto"></div>
-                <p class="text-x-gray text-sm mt-2">Chargement...</p>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -219,70 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Charger les suggestions
-    {% if user.is_authenticated %}
-    fetch('/api/suggestions/')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('suggestions-container');
-            if (data.suggestions && data.suggestions.length > 0) {
-                container.innerHTML = data.suggestions.map(user => `
-                    <div class="flex items-center space-x-3 py-2">
-                        <div class="flex-shrink-0">
-                            ${user.avatar_url ? 
-                                `<img src="${user.avatar_url}" alt="${user.username}" class="w-10 h-10 rounded-full object-cover">` :
-                                `<div class="w-10 h-10 rounded-full bg-x-blue flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">${user.username.charAt(0).toUpperCase()}</span>
-                                </div>`
-                            }
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <a href="${user.profile_url}" class="block hover:underline">
-                                <p class="font-medium text-x-text text-sm truncate">${user.full_name}</p>
-                                <p class="text-x-gray text-xs">@${user.username}</p>
-                            </a>
-                        </div>
-                        <button class="follow-btn bg-x-blue text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-x-blue-hover transition-colors"
-                                data-username="${user.username}"
-                                data-following="false">
-                            Suivre
-                        </button>
-                    </div>
-                `).join('');
-                
-                // Ajouter les event listeners aux nouveaux boutons
-                container.querySelectorAll('.follow-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const username = this.dataset.username;
-                        fetch(`/follow/${username}/`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                                'Content-Type': 'application/json',
-                            },
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                this.textContent = 'Suivi';
-                                this.className = 'follow-btn bg-x-gray text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-x-dark-gray transition-colors';
-                                this.dataset.following = 'true';
-                            }
-                        });
-                    });
-                });
-            } else {
-                container.innerHTML = '<p class="text-x-gray text-sm text-center py-4">Aucune suggestion disponible</p>';
-            }
-        })
-        .catch(error => {
-            console.error('Erreur lors du chargement des suggestions:', error);
-            document.getElementById('suggestions-container').innerHTML = '<p class="text-x-gray text-sm text-center py-4">Erreur de chargement</p>';
-        });
-    {% endif %}
+
 });
 </script>
 
-<!-- Token CSRF pour les requêtes AJAX -->
 {% csrf_token %}
 {% endblock %}

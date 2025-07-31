@@ -27,12 +27,15 @@ def delete_like_notification(sender, instance, **kwargs):
     """
     Supprime la notification quand un like est retiré
     """
-    Notification.objects.filter(
-        recipient=instance.tweet.author,
-        sender=instance.user,
-        tweet=instance.tweet,
-        notification_type='like'
-    ).delete()
+    try:
+        Notification.objects.filter(
+            recipient=instance.tweet.author,
+            sender=instance.user,
+            tweet=instance.tweet,
+            notification_type='like'
+        ).delete()
+    except (AttributeError, Tweet.DoesNotExist):
+        pass
 
 
 @receiver(post_save, sender=Comment)
@@ -55,12 +58,15 @@ def delete_comment_notification(sender, instance, **kwargs):
     """
     Supprime la notification quand un commentaire est supprimé
     """
-    Notification.objects.filter(
-        recipient=instance.tweet.author,
-        sender=instance.author,
-        tweet=instance.tweet,
-        notification_type='comment'
-    ).delete()
+    try:
+        Notification.objects.filter(
+            recipient=instance.tweet.author,
+            sender=instance.author,
+            tweet=instance.tweet,
+            notification_type='comment'
+        ).delete()
+    except (AttributeError, Tweet.DoesNotExist):
+        pass
 
 
 @receiver(post_save, sender=Follow)
@@ -109,10 +115,13 @@ def delete_retweet_notification(sender, instance, **kwargs):
     """
     Supprime la notification quand un retweet est supprimé
     """
-    if instance.retweet_of:
-        Notification.objects.filter(
-            recipient=instance.retweet_of.author,
-            sender=instance.author,
-            tweet=instance.retweet_of,
-            notification_type='retweet'
-        ).delete()
+    try:
+        if instance.retweet_of:
+            Notification.objects.filter(
+                recipient=instance.retweet_of.author,
+                sender=instance.author,
+                tweet=instance.retweet_of,
+                notification_type='retweet'
+            ).delete()
+    except (AttributeError, Tweet.DoesNotExist):
+        pass

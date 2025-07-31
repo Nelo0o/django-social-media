@@ -124,9 +124,15 @@ class UserSearchView(TemplateView):
         query = self.request.GET.get('q', '').strip()
         page = self.request.GET.get('page', 1)
         
-        users = UserProfile.objects.select_related('user').all()
+        # Initialiser les variables par défaut
+        users = UserProfile.objects.none()  # QuerySet vide par défaut
+        page_obj = None
+        total_results = 0
         
+        # Ne récupérer les utilisateurs que si une recherche est effectuée
         if query:
+            users = UserProfile.objects.select_related('user').all()
+            
             # Recherche par nom d'utilisateur, prénom, nom, bio ou ville
             users = users.filter(
                 Q(user__username__icontains=query) |
@@ -135,51 +141,52 @@ class UserSearchView(TemplateView):
                 Q(bio__icontains=query) |
                 Q(city__icontains=query)
             )
-        
-        # Exclure l'utilisateur connecté de la recherche
-        if self.request.user.is_authenticated:
-            users = users.exclude(user=self.request.user)
             
-            # Exclure les utilisateurs qui ont bloqué l'utilisateur connecté
-            from follows.models import Follow
-            current_user_profile = self.request.user.profile
+            # Exclure l'utilisateur connecté de la recherche
+            if self.request.user.is_authenticated:
+                users = users.exclude(user=self.request.user)
+                
+                # Exclure les utilisateurs qui ont bloqué l'utilisateur connecté
+                from follows.models import Follow
+                current_user_profile = self.request.user.profile
+                
+                # Obtenir les IDs des utilisateurs qui ont bloqué l'utilisateur connecté
+                blocked_by_users = Follow.objects.filter(
+                    follower=current_user_profile,
+                    blocked=True
+                ).values_list('followed_id', flat=True)
+                
+                # Obtenir les IDs des utilisateurs que l'utilisateur connecté a bloqués
+                blocking_users = Follow.objects.filter(
+                    followed=current_user_profile,
+                    blocked=True
+                ).values_list('follower_id', flat=True)
+                
+                # Exclure tous ces utilisateurs de la recherche
+                excluded_users = list(blocked_by_users) + list(blocking_users)
+                if excluded_users:
+                    users = users.exclude(id__in=excluded_users)
             
-            # Obtenir les IDs des utilisateurs qui ont bloqué l'utilisateur connecté
-            blocked_by_users = Follow.objects.filter(
-                follower=current_user_profile,
-                blocked=True
-            ).values_list('followed_id', flat=True)
+            # Ordonner par nombre de followers puis par nom d'utilisateur
+            users = users.annotate(
+                followers_count_db=Count('followers', distinct=True)
+            ).order_by('-followers_count_db', 'user__username')
             
-            # Obtenir les IDs des utilisateurs que l'utilisateur connecté a bloqués
-            blocking_users = Follow.objects.filter(
-                followed=current_user_profile,
-                blocked=True
-            ).values_list('follower_id', flat=True)
+            # Pagination
+            paginator = Paginator(users, 12)  # 12 utilisateurs par page
+            page_obj = paginator.get_page(page)
+            total_results = paginator.count
             
-            # Exclure tous ces utilisateurs de la recherche
-            excluded_users = list(blocked_by_users) + list(blocking_users)
-            if excluded_users:
-                users = users.exclude(id__in=excluded_users)
-        
-        # Ordonner par nombre de followers puis par nom d'utilisateur
-        users = users.annotate(
-            followers_count_db=Count('followers', distinct=True)
-        ).order_by('-followers_count_db', 'user__username')
-        
-        # Pagination
-        paginator = Paginator(users, 12)  # 12 utilisateurs par page
-        page_obj = paginator.get_page(page)
-        
-        # Ajouter les informations de suivi pour l'utilisateur connecté
-        if self.request.user.is_authenticated:
-            for user_profile in page_obj:
-                user_profile.is_followed_by_current_user = self.request.user.profile.is_following(user_profile)
+            # Ajouter les informations de suivi pour l'utilisateur connecté
+            if self.request.user.is_authenticated:
+                for user_profile in page_obj:
+                    user_profile.is_followed_by_current_user = self.request.user.profile.is_following(user_profile)
         
         context.update({
             'query': query,
             'page_obj': page_obj,
-            'users': page_obj,
-            'total_results': paginator.count
+            'users': page_obj if page_obj else [],
+            'total_results': total_results
         })
         
         return context

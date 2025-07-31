@@ -120,8 +120,16 @@
                     <div class="text-x-gray text-sm">Tweet{{ profile.tweets_count|pluralize }}</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-xl font-bold text-x-text" id="followers-count">{{ profile.followers_count }}</div>
-                    <div class="text-x-gray text-sm">Abonné{{ profile.followers_count|pluralize }}</div>
+                    {% if is_own_profile %}
+                        <a href="{% url 'manage_followers' %}" class="block hover:bg-x-darker/20 rounded-lg p-2 transition-colors">
+                            <div class="text-xl font-bold text-x-text" id="followers-count">{{ profile.followers_count }}</div>
+                            <div class="text-x-text-secondary text-sm">Abonné{{ profile.followers_count|pluralize }}</div>
+                            <div class="text-xs text-x-blue mt-1">Gérer</div>
+                        </a>
+                    {% else %}
+                        <div class="text-xl font-bold text-x-text" id="followers-count">{{ profile.followers_count }}</div>
+                        <div class="text-x-text-secondary text-sm">Abonné{{ profile.followers_count|pluralize }}</div>
+                    {% endif %}
                 </div>
                 <div class="text-center">
                     <div class="text-xl font-bold text-x-text">{{ profile.following_count }}</div>

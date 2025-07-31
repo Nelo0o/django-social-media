@@ -34,6 +34,7 @@ urlpatterns = [
     path('profile/', user_views.AccountView.as_view(), name='profile'),
     path('profile/edit/', user_views.ProfileUpdateView.as_view(), name='profile_edit'),
     path('profile/delete/', user_views.delete_account, name='delete_account'),
+    path('profile/followers/', user_views.ManageFollowersView.as_view(), name='manage_followers'),
     path('profile/<str:username>/', user_views.AccountView.as_view(), name='public_profile'),
     
     # URLs de follow/unfollow

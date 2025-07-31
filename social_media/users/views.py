@@ -14,7 +14,7 @@ from .forms import InscriptionForm, UserProfileForm
 from .models import UserProfile
 from tweets.models import Tweet
 
-
+# Inscription utilisateur
 class RegisterView(FormView):
     template_name = "register.html"
     form_class = InscriptionForm
@@ -26,7 +26,7 @@ class RegisterView(FormView):
         messages.success(self.request, f'Bienvenue {user.username}!')
         return super().form_valid(form)
 
-
+# Afficher le profil utilisateur connecté ou un autre utilisateur
 class AccountView(LoginRequiredMixin, TemplateView):
     template_name = 'account.html'
     
@@ -79,7 +79,7 @@ class AccountView(LoginRequiredMixin, TemplateView):
             
         return context
 
-
+# Modifier le profil utilisateur connecté
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = UserProfile
     form_class = UserProfileForm
@@ -93,7 +93,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         messages.success(self.request, 'Profil mis à jour!')
         return super().form_valid(form)
 
-
+# Afficher le profil public d'un utilisateur
 class PublicProfileView(TemplateView):
     template_name = 'public_profile.html'
     
@@ -114,7 +114,7 @@ class PublicProfileView(TemplateView):
             
         return context
 
-
+# Rechercher des utilisateurs
 class UserSearchView(TemplateView):
     template_name = 'user_search.html'
     
@@ -162,7 +162,7 @@ class UserSearchView(TemplateView):
         
         return context
 
-
+# Suggestions d'utilisateurs à suivre
 @login_required
 def user_suggestions(request):
     """API pour obtenir des suggestions d'utilisateurs à suivre"""
@@ -194,7 +194,7 @@ def user_suggestions(request):
         'suggestions': suggestions_data
     })
 
-
+# Supprimer le compte utilisateur
 @login_required
 def delete_account(request):
     """Vue pour supprimer le compte utilisateur"""
@@ -212,3 +212,81 @@ def delete_account(request):
         return redirect('home')
     
     return redirect('profile')
+
+# Bloquer un follower
+@login_required
+def block_follower(request, username):
+    """Bloquer un follower"""
+    if request.method == 'POST':
+        user_to_block = get_object_or_404(User, username=username)
+        user_profile = user_to_block.profile
+        
+        # Vérifier que l'utilisateur nous suit avant de le bloquer
+        if request.user.profile.follow_manager.block_follower(user_profile):
+            return JsonResponse({
+                'success': True,
+                'message': f'{username} a été bloqué.',
+                'blocked': True
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': f'{username} ne vous suit pas.',
+                'blocked': False
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+
+# Débloquer un follower
+@login_required
+def unblock_follower(request, username):
+    """Débloquer un follower"""
+    if request.method == 'POST':
+        user_to_unblock = get_object_or_404(User, username=username)
+        user_profile = user_to_unblock.profile
+        
+        if request.user.profile.follow_manager.unblock_follower(user_profile):
+            return JsonResponse({
+                'success': True,
+                'message': f'{username} a été débloqué.',
+                'blocked': False
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': f'Impossible de débloquer {username}.',
+                'blocked': True
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+
+# Gérer les followers (avec options de blocage)
+class ManageFollowersView(LoginRequiredMixin, TemplateView):
+    template_name = 'manage_followers.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_profile = self.request.user.profile
+        
+        # Récupérer tous les followers (bloqués et non bloqués)
+        from follows.models import Follow
+        all_follow_relations = Follow.objects.filter(
+            followed=user_profile
+        ).select_related('follower__user').order_by('-created_at')
+        
+        followers_data = []
+        for follow_relation in all_follow_relations:
+            follower_profile = follow_relation.follower
+            followers_data.append({
+                'profile': follower_profile,
+                'user': follower_profile.user,
+                'is_blocked': follow_relation.blocked,
+                'follow_date': follow_relation.created_at
+            })
+        
+        context['followers_data'] = followers_data
+        context['total_followers'] = len(followers_data)
+        context['blocked_count'] = sum(1 for f in followers_data if f['is_blocked'])
+        context['active_count'] = sum(1 for f in followers_data if not f['is_blocked'])
+        
+        return context

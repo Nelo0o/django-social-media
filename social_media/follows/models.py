@@ -121,3 +121,14 @@ class FollowManager:
             return True
         except Follow.DoesNotExist:
             return False
+    
+    def is_follower_blocked(self, user_profile):
+        """Vérifier si un follower est bloqué"""
+        try:
+            follow_relation = Follow.objects.get(
+                follower=user_profile,
+                followed=self.user_profile
+            )
+            return follow_relation.blocked
+        except Follow.DoesNotExist:
+            return False

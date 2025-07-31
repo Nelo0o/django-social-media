@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Gérer les followers - Z{% endblock %}
+
+{% block content %}
+<!-- Main Content Area -->
+<div class="flex-1 max-w-2xl border-x border-x-border">
+    <!-- Header -->
+    <div class="sticky top-0 bg-x-dark/95 backdrop-blur-md border-b border-x-border p-4">
+        <div class="flex items-center">
+            <a href="{% url 'profile' %}" class="mr-4 p-2 rounded-full hover:bg-x-darker transition-colors">
+                <svg class="w-5 h-5 text-x-text" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-xl font-bold text-x-text">Gérer les followers</h1>
+                <p class="text-x-text-secondary text-sm">{{ total_followers }} follower{{ total_followers|pluralize }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistiques -->
+    <div class="border-b border-x-border p-4">
+        <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="bg-x-darker/30 rounded-lg p-3">
+                <div class="text-2xl font-bold text-x-text">{{ total_followers }}</div>
+                <div class="text-x-text-secondary text-sm">Total</div>
+            </div>
+            <div class="bg-x-darker/30 rounded-lg p-3">
+                <div class="text-2xl font-bold text-green-400">{{ active_count }}</div>
+                <div class="text-x-text-secondary text-sm">Actifs</div>
+            </div>
+            <div class="bg-x-darker/30 rounded-lg p-3">
+                <div class="text-2xl font-bold text-red-400">{{ blocked_count }}</div>
+                <div class="text-x-text-secondary text-sm">Bloqués</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des followers -->
+    <div class="divide-y divide-x-border">
+        {% for follower_data in followers_data %}
+        <div class="p-4 hover:bg-x-darker/20 transition-colors">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <!-- Avatar -->
+                    {% if follower_data.profile.avatar %}
+                        <img src="{{ follower_data.profile.avatar.url }}" class="w-12 h-12 rounded-full object-cover" alt="Avatar de {{ follower_data.user.username }}">
+                    {% else %}
+                        <div class="w-12 h-12 rounded-full bg-x-purple/20 flex items-center justify-center">
+                            <span class="text-x-purple font-bold">
+                                {{ follower_data.user.username|first|upper }}
+                            </span>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="flex-1">
+                        <!-- Informations utilisateur -->
+                        <div class="flex items-center space-x-2">
+                            <a href="{% url 'public_profile' follower_data.user.username %}" class="font-bold text-x-text hover:underline">
+                                {{ follower_data.user.get_full_name|default:follower_data.user.username }}
+                            </a>
+                            {% if follower_data.is_blocked %}
+                                <span class="bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs font-medium">
+                                    Bloqué
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="text-x-text-secondary text-sm">
+                            @{{ follower_data.user.username }}
+                        </div>
+                        {% if follower_data.profile.bio %}
+                            <p class="text-x-text-secondary text-sm mt-1 line-clamp-2">{{ follower_data.profile.bio }}</p>
+                        {% endif %}
+                        <div class="text-x-text-secondary text-xs mt-1">
+                            Vous suit depuis {{ follower_data.follow_date|date:"d M Y" }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex items-center space-x-2">
+                    {% if follower_data.is_blocked %}
+                        <!-- Bouton débloquer -->
+                        <button onclick="unblockFollower('{{ follower_data.user.username }}')" 
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                            Débloquer
+                        </button>
+                    {% else %}
+                        <!-- Bouton bloquer -->
+                        <button onclick="blockFollower('{{ follower_data.user.username }}')" 
+                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                            Bloquer
+                        </button>
+                    {% endif %}
+                    
+                    <!-- Menu options -->
+                    <div class="relative">
+                        <button class="p-2 rounded-full hover:bg-x-darker transition-colors text-x-text-secondary">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-8 text-center">
+            <div class="text-x-text-secondary">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zM4 18v-4h3v4h2v-7.5c0-.83.67-1.5 1.5-1.5S12 9.67 12 10.5V11h2v-.5c0-.83.67-1.5 1.5-1.5S17 9.67 17 10.5V18h2v2H4v-2z"/>
+                </svg>
+                <p class="text-lg font-medium">Aucun follower</p>
+                <p class="text-sm mt-1">Personne ne vous suit encore.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Sidebar droite (optionnelle) -->
+<div class="w-80 p-4 hidden lg:block">
+    <div class="bg-x-darker/30 rounded-xl p-4 border border-x-border">
+        <h3 class="text-lg font-semibold text-x-text mb-3">À propos du blocage</h3>
+        <div class="space-y-3 text-x-text-secondary text-sm">
+            <p>• Les followers bloqués ne verront plus vos tweets</p>
+            <p>• Ils ne pourront plus vous mentionner</p>
+            <p>• Ils ne recevront plus de notifications de vos activités</p>
+            <p>• Vous pouvez les débloquer à tout moment</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function blockFollower(username) {
+    if (!confirm(`Êtes-vous sûr de vouloir bloquer @${username} ?`)) {
+        return;
+    }
+    
+    fetch(`/block/${username}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Recharger la page pour mettre à jour l'affichage
+        } else {
+            alert(data.message || 'Erreur lors du blocage');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors du blocage');
+    });
+}
+
+function unblockFollower(username) {
+    if (!confirm(`Êtes-vous sûr de vouloir débloquer @${username} ?`)) {
+        return;
+    }
+    
+    fetch(`/unblock/${username}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Recharger la page pour mettre à jour l'affichage
+        } else {
+            alert(data.message || 'Erreur lors du déblocage');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors du déblocage');
+    });
+}
+</script>
+{% endblock %}

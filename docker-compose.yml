@@ -1,19 +1,16 @@
-# Docker Compose pour développement local uniquement
-# Railway ignore ce fichier automatiquement
-
 services:
   db:
     image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: ${DB_NAME:-boutique_db}
-      POSTGRES_USER: ${DB_USER:-boutique_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-boutique_password}
+      POSTGRES_DB: ${DB_NAME:-social_media_db}
+      POSTGRES_USER: ${DB_USER:-social_media_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-social_media_password}
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-boutique_user} -d ${DB_NAME:-boutique_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-social_media_user} -d ${DB_NAME:-social_media_db}"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -31,9 +28,9 @@ services:
       - SECRET_KEY=${SECRET_KEY:-django-insecure-your-secret-key}
       - DEBUG=${DEBUG:-1}
       - DB_HOST=db
-      - DB_NAME=${DB_NAME:-boutique_db}
-      - DB_USER=${DB_USER:-boutique_user}
-      - DB_PASSWORD=${DB_PASSWORD:-boutique_password}
+      - DB_NAME=${DB_NAME:-social_media_db}
+      - DB_USER=${DB_USER:-social_media_user}
+      - DB_PASSWORD=${DB_PASSWORD:-social_media_password}
       - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME:-admin}
       - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@example.com}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-admin123}

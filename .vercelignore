@@ -56,3 +56,6 @@ media/
 Dockerfile
 docker-compose.yml
 .dockerignore
+
+# Railway ignore Docker Compose
+docker-compose.yml

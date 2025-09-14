@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ['python39', 'postgresql']
+
+[phases.install]
+cmds = ['pip install -r requirements.txt']
+
+[phases.build]
+cmds = ['cd social_media && python manage.py collectstatic --noinput']
+
+[start]
+cmd = 'cd social_media && python manage.py migrate && gunicorn social_media.wsgi:application --bind 0.0.0.0:$PORT'

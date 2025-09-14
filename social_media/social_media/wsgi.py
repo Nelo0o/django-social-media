@@ -11,8 +11,8 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-# Configuration pour Vercel
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'social_media.settings_vercel')
+# Configuration pour Railway
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'social_media.settings_railway')
 
 application = get_wsgi_application()
 

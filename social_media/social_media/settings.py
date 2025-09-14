@@ -84,9 +84,9 @@ WSGI_APPLICATION = 'social_media.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'boutique_db'),
-        'USER': os.getenv('DB_USER', 'boutique_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'boutique_password'),
+        'NAME': os.getenv('DB_NAME', 'social_media_db'),
+        'USER': os.getenv('DB_USER', 'social_media_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'social_media_password'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
@@ -139,6 +139,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (User uploaded content)
 MEDIA_URL = '/media/'

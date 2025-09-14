@@ -1,19 +1,40 @@
 #!/bin/bash
 
-# Attendre que PostgreSQL soit prêt
-echo "⏳ Attente de la base de données..."
-while ! nc -z db 5432; do
+# Attendre que la base de données soit prête
+echo "Waiting for postgres..."
+
+# Utiliser des valeurs par défaut si les variables ne sont pas définies
+DB_HOST=${DB_HOST:-db}
+DB_PORT=${DB_PORT:-5432}
+
+echo "Connecting to $DB_HOST:$DB_PORT"
+
+while ! nc -z $DB_HOST $DB_PORT; do
   sleep 0.1
 done
-echo "✅ Base de données prête!"
 
-# Migrer la base de données
-echo "🔄 Migration de la base de données..."
+echo "PostgreSQL started"
+
+# Appliquer les migrations
+echo "Applying database migrations..."
 python manage.py migrate
 
-# Créer un superutilisateur si il n'existe pas
-echo "👤 Configuration du superutilisateur..."
-echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('${DJANGO_SUPERUSER_USERNAME:-admin}', '${DJANGO_SUPERUSER_EMAIL:-admin@example.com}', '${DJANGO_SUPERUSER_PASSWORD:-admin123}') if not User.objects.filter(username='${DJANGO_SUPERUSER_USERNAME:-admin}').exists() else print('Superutilisateur existe déjà')" | python manage.py shell
+# Collecter les fichiers statiques
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
 
-echo "🚀 Démarrage du serveur Django..."
+# Créer un superutilisateur si les variables sont définies
+if [ "$DJANGO_SUPERUSER_USERNAME" ] && [ "$DJANGO_SUPERUSER_EMAIL" ] && [ "$DJANGO_SUPERUSER_PASSWORD" ]; then
+    echo "Creating superuser..."
+    python manage.py shell -c "
+from django.contrib.auth.models import User
+if not User.objects.filter(username='$DJANGO_SUPERUSER_USERNAME').exists():
+    User.objects.create_superuser('$DJANGO_SUPERUSER_USERNAME', '$DJANGO_SUPERUSER_EMAIL', '$DJANGO_SUPERUSER_PASSWORD')
+    print('Superuser created successfully')
+else:
+    print('Superuser already exists')
+"
+fi
+
+# Exécuter la commande passée en argument
 exec "$@"
